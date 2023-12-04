@@ -1,4 +1,4 @@
-import winim/lean, d3d9, d3d9types
+import winim/lean, d3d9
 
 var 
   d3d: LPDIRECT3D9
