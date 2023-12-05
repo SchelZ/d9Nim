@@ -7,8 +7,127 @@ else:
 {.pragma: d3d9_header, header: "Include/d3d9.h".}
 {.pragma: d3d9types_header, header: "Include/d3d9types.h".}
 
+const 
+  D3DFVF_TEXTUREFORMAT2* = 0         # Two floating point values
+  D3DFVF_TEXTUREFORMAT1* = 3         # One floating point value
+  D3DFVF_TEXTUREFORMAT3* = 1         # Three floating point values
+  D3DFVF_TEXTUREFORMAT4* = 2         # Four floating point values
+
+
+
+  D3DVS_SWIZZLE_SHIFT* = 16
+  D3DVS_SWIZZLE_MASK* = 0x00FF0000
+
+  # The following bits define where to take component X from:
+  D3DVS_X_X* = (0 shl D3DVS_SWIZZLE_SHIFT)
+  D3DVS_X_Y* = (1 shl D3DVS_SWIZZLE_SHIFT)
+  D3DVS_X_Z* = (2 shl D3DVS_SWIZZLE_SHIFT)
+  D3DVS_X_W* = (3 shl D3DVS_SWIZZLE_SHIFT)
+
+  # The following bits define where to take component Y from:
+  D3DVS_Y_X* = (0 shl (D3DVS_SWIZZLE_SHIFT + 2))
+  D3DVS_Y_Y* = (1 shl (D3DVS_SWIZZLE_SHIFT + 2))
+  D3DVS_Y_Z* = (2 shl (D3DVS_SWIZZLE_SHIFT + 2))
+  D3DVS_Y_W* = (3 shl (D3DVS_SWIZZLE_SHIFT + 2))
+
+  # The following bits define where to take component Z from:
+  D3DVS_Z_X* = (0 shl (D3DVS_SWIZZLE_SHIFT + 4))
+  D3DVS_Z_Y* = (1 shl (D3DVS_SWIZZLE_SHIFT + 4))
+  D3DVS_Z_Z* = (2 shl (D3DVS_SWIZZLE_SHIFT + 4))
+  D3DVS_Z_W* = (3 shl (D3DVS_SWIZZLE_SHIFT + 4))
+
+  # The following bits define where to take component W from:
+  D3DVS_W_X* = (0 shl (D3DVS_SWIZZLE_SHIFT + 6))
+  D3DVS_W_Y* = (1 shl (D3DVS_SWIZZLE_SHIFT + 6))
+  D3DVS_W_Z* = (2 shl (D3DVS_SWIZZLE_SHIFT + 6))
+  D3DVS_W_W* = (3 shl (D3DVS_SWIZZLE_SHIFT + 6))
+
+  # Value when there is no swizzle (X is taken from X, Y is taken from Y,
+  # Z is taken from Z, W is taken from W
+  #
+  D3DVS_NOSWIZZLE* = (D3DVS_X_X or D3DVS_Y_Y or D3DVS_Z_Z or D3DVS_W_W)
+
+  # source parameter swizzle
+  D3DSP_SWIZZLE_SHIFT* = 16
+  D3DSP_SWIZZLE_MASK* = 0x00FF0000
+
+  D3DSP_NOSWIZZLE* = ( (0 shl (D3DSP_SWIZZLE_SHIFT + 0)) or (1 shl (D3DSP_SWIZZLE_SHIFT + 2)) or (2 shl (D3DSP_SWIZZLE_SHIFT + 4)) or (3 shl (D3DSP_SWIZZLE_SHIFT + 6)) )
+  
+  # pixel-shader swizzle ops
+  D3DSP_REPLICATERED* = ( (0 shl (D3DSP_SWIZZLE_SHIFT + 0)) or (0 shl (D3DSP_SWIZZLE_SHIFT + 2)) or (0 shl (D3DSP_SWIZZLE_SHIFT + 4)) or (0 shl (D3DSP_SWIZZLE_SHIFT + 6)) )
+  D3DSP_REPLICATEGREEN* = ( (1 shl (D3DSP_SWIZZLE_SHIFT + 0)) or (1 shl (D3DSP_SWIZZLE_SHIFT + 2)) or (1 shl (D3DSP_SWIZZLE_SHIFT + 4)) or (1 shl (D3DSP_SWIZZLE_SHIFT + 6)) )
+  D3DSP_REPLICATEBLUE* = ( (2 shl (D3DSP_SWIZZLE_SHIFT + 0)) or (2 shl (D3DSP_SWIZZLE_SHIFT + 2)) or (2 shl (D3DSP_SWIZZLE_SHIFT + 4)) or (2 shl (D3DSP_SWIZZLE_SHIFT + 6)) )
+  D3DSP_REPLICATEALPHA* = ( (3 shl (D3DSP_SWIZZLE_SHIFT + 0)) or (3 shl (D3DSP_SWIZZLE_SHIFT + 2)) or (3 shl (D3DSP_SWIZZLE_SHIFT + 4)) or (3 shl (D3DSP_SWIZZLE_SHIFT + 6)) )
+
+
+  # source parameter modifiers
+  D3DSP_SRCMOD_SHIFT* = 24
+  D3DSP_SRCMOD_MASK* = 0x0F000000
+
+# const MAKEFOURCC: proc (ch0: int, ch1: char, ch2: char, ch3: char) = (cast[DWORD](cast[BYTE](ch0)) or (cast[DWORD](cast[BYTE](ch1) shl 8)) or ((DWORD)(BYTE)(ch2) shl 16) or ((DWORD)(BYTE)(ch3) shl 24 ))
+
+
+
 
 type 
+
+  #---------------------------------------------------------------------
+  # High order surfaces
+  #
+  D3DBASISTYPE* {.importcpp: "enum _D3DBASISTYPE", d3d9types_header, pure.} = enum
+    D3DBASIS_BEZIER      = 0,
+    D3DBASIS_BSPLINE     = 1,
+    D3DBASIS_CATMULL_ROM = 2, # In D3D8 this used to be D3DBASIS_INTERPOLATE #
+    D3DBASIS_FORCE_DWORD = 0x7fffffff
+
+  D3DDEGREETYPE* {.importcpp: "enum _D3DDEGREETYPE", d3d9types_header, pure.} = enum
+    D3DDEGREE_LINEAR      = 1,
+    D3DDEGREE_QUADRATIC   = 2,
+    D3DDEGREE_CUBIC       = 3,
+    D3DDEGREE_QUINTIC     = 5,
+    D3DDEGREE_FORCE_DWORD = 0x7fffffff
+
+  D3DPATCHEDGESTYLE* {.importcpp: "enum _D3DPATCHEDGESTYLE", d3d9types_header, pure.} = enum
+    D3DPATCHEDGE_DISCRETE    = 0,
+    D3DPATCHEDGE_CONTINUOUS  = 1,
+    D3DPATCHEDGE_FORCE_DWORD = 0x7fffffff
+
+  D3DSTATEBLOCKTYPE* {.importcpp: "enum _D3DSTATEBLOCKTYPE", d3d9types_header, pure.} = enum
+    D3DSBT_ALL           = 1, # capture all state
+    D3DSBT_PIXELSTATE    = 2, # capture pixel state
+    D3DSBT_VERTEXSTATE   = 3, # capture vertex state
+    D3DSBT_FORCE_DWORD   = 0x7fffffff
+
+  # The D3DVERTEXBLENDFLAGS type is used with D3DRS_VERTEXBLEND state.
+  #
+  D3DVERTEXBLENDFLAGS* {.importcpp: "enum _D3DVERTEXBLENDFLAGS", d3d9types_header, pure.} = enum
+    D3DVBF_DISABLE  = 0,     # Disable vertex blending
+    D3DVBF_1WEIGHTS = 1,     # 2 matrix blending
+    D3DVBF_2WEIGHTS = 2,     # 3 matrix blending
+    D3DVBF_3WEIGHTS = 3,     # 4 matrix blending
+    D3DVBF_TWEENING = 255,   # blending using D3DRS_TWEENFACTOR
+    D3DVBF_0WEIGHTS = 256,   # one matrix is used with weight 1.0
+    D3DVBF_FORCE_DWORD = 0x7fffffff # force 32-bit size enum
+
+  D3DTEXTURETRANSFORMFLAGS* {.importcpp: "enum _D3DTEXTURETRANSFORMFLAGS", d3d9types_header, pure.} = enum
+    D3DTTFF_DISABLE         = 0,    # texture coordinates are passed directly
+    D3DTTFF_COUNT1          = 1,    # rasterizer should expect 1-D texture coords
+    D3DTTFF_COUNT2          = 2,    # rasterizer should expect 2-D texture coords
+    D3DTTFF_COUNT3          = 3,    # rasterizer should expect 3-D texture coords
+    D3DTTFF_COUNT4          = 4,    # rasterizer should expect 4-D texture coords
+    D3DTTFF_PROJECTED       = 256,  # texcoords to be divided by COUNTth element
+    D3DTTFF_FORCE_DWORD     = 0x7fffffff
+
+  #---------------------------------------------------------------------
+  # Direct3D9 Device types #
+  D3DDEVTYPE* {.importcpp: "enum _D3DDEVTYPE", d3d9types_header, pure.} = enum
+    D3DDEVTYPE_HAL         = 1,
+    D3DDEVTYPE_REF         = 2,
+    D3DDEVTYPE_SW          = 3,
+
+    D3DDEVTYPE_FORCE_DWORD  = 0x7fffffff
+
+  # Multi-Sample buffer types #
   D3DMULTISAMPLE_TYPE* {.importcpp: "enum _D3DMULTISAMPLE_TYPE", d3d9types_header, pure.} = enum
     D3DMULTISAMPLE_NONE            =  0,
     D3DMULTISAMPLE_NONMASKABLE     =  1,
@@ -88,11 +207,11 @@ type
     D3DFMT_D32F_LOCKABLE        = 82,
     D3DFMT_D24FS8               = 83,
 
-    D3DFMT_VERTEXDATA           =100,
-    D3DFMT_INDEX16              =101,
-    D3DFMT_INDEX32              =102,
+    D3DFMT_VERTEXDATA           = 100,
+    D3DFMT_INDEX16              = 101,
+    D3DFMT_INDEX32              = 102,
 
-    D3DFMT_Q16W16V16U16         =110,
+    D3DFMT_Q16W16V16U16         = 110,
 
     # D3DFMT_MULTI2_ARGB8         = MAKEFOURCC('M','E','T','1'),
 
@@ -137,13 +256,6 @@ type
     # FullScreen_RefreshRateInHz must be zero for Windowed mode #
     FullScreen_RefreshRateInHz*: uint
     PresentationInterval*: uint
-
-  D3DDEVTYPE* {.pure.} = enum
-    D3DDEVTYPE_HAL         = 1,
-    D3DDEVTYPE_REF         = 2,
-    D3DDEVTYPE_SW          = 3,
-
-    D3DDEVTYPE_FORCE_DWORD  = 0x7fffffff
 
   D3DRECT* {.importcpp: "struct _D3DRECT", d3d9types_header, pure.} = object
     x1*: LONG
