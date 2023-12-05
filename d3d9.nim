@@ -8,13 +8,26 @@ else:
 {.pragma: d3d9types_header, header: "Include/d3d9types.h".}
 
 const 
-  D3DFVF_TEXTUREFORMAT2* = 0         # Two floating point values
-  D3DFVF_TEXTUREFORMAT1* = 3         # One floating point value
-  D3DFVF_TEXTUREFORMAT3* = 1         # Three floating point values
-  D3DFVF_TEXTUREFORMAT4* = 2         # Four floating point values
 
 
+  # destination parameter 
+  D3DSP_DSTSHIFT_SHIFT* = 24
+  D3DSP_DSTSHIFT_MASK* = 0x0F000000
 
+  # destination/source parameter register type
+  D3DSP_REGTYPE_SHIFT* = 28
+  D3DSP_REGTYPE_SHIFT2* = 8
+  D3DSP_REGTYPE_MASK* = 0x70000000
+  D3DSP_REGTYPE_MASK2* = 0x00001800
+
+  # Source operand addressing modes
+  D3DVS_ADDRESSMODE_SHIFT* = 13
+  D3DVS_ADDRESSMODE_MASK* = (1 shl D3DVS_ADDRESSMODE_SHIFT)
+  D3DSHADER_ADDRESSMODE_SHIFT* = 13
+  D3DSHADER_ADDRESSMODE_MASK* = (1 shl D3DSHADER_ADDRESSMODE_SHIFT)
+
+  # Source operand swizzle definitions
+  #
   D3DVS_SWIZZLE_SHIFT* = 16
   D3DVS_SWIZZLE_MASK* = 0x00FF0000
 
@@ -66,10 +79,82 @@ const
 
 # const MAKEFOURCC: proc (ch0: int, ch1: char, ch2: char, ch3: char) = (cast[DWORD](cast[BYTE](ch0)) or (cast[DWORD](cast[BYTE](ch1) shl 8)) or ((DWORD)(BYTE)(ch2) shl 16) or ((DWORD)(BYTE)(ch3) shl 24 ))
 
+  # Texture coordinate format bits in the FVF id
+  D3DFVF_TEXTUREFORMAT2* = 0         # Two floating point values
+  D3DFVF_TEXTUREFORMAT1* = 3         # One floating point value
+  D3DFVF_TEXTUREFORMAT3* = 1         # Three floating point values
+  D3DFVF_TEXTUREFORMAT4* = 2         # Four floating point values
 
+  # RefreshRate pre-defines */
+  D3DPRESENT_RATE_DEFAULT* = 0x00000000
+
+  # Values for D3DPRESENT_PARAMETERS.Flags
+  D3DPRESENTFLAG_LOCKABLE_BACKBUFFER* = 0x00000001
+  D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL* = 0x00000002
+  D3DPRESENTFLAG_DEVICECLIP* = 0x00000004
+  D3DPRESENTFLAG_VIDEO* = 0x00000010
+
+
+template MAKEFOURCC*(ch0: char, ch1: char, ch2: char, ch3: char): auto = (cast[DWORD](cast[BYTE](ch0)) or (cast[DWORD](cast[BYTE](ch1)) shl 8) or (cast[DWORD](cast[BYTE](ch2)) shl 16) or (cast[DWORD](cast[BYTE](ch3)) shl 24 ))
+template D3DFVF_TEXCOORDSIZE3*(CoordIndex: untyped): untyped = (D3DFVF_TEXTUREFORMAT3 shl (CoordIndex*2 + 16))
+template D3DFVF_TEXCOORDSIZE2*(CoordIndex: untyped): untyped = (D3DFVF_TEXTUREFORMAT2)
+template D3DFVF_TEXCOORDSIZE4*(CoordIndex: untyped): untyped = (D3DFVF_TEXTUREFORMAT4 shl (CoordIndex*2 + 16))
+template D3DFVF_TEXCOORDSIZE1*(CoordIndex: untyped): untyped = (D3DFVF_TEXTUREFORMAT1 shl (CoordIndex*2 + 16))
 
 
 type 
+
+  # destination/source parameter register type
+  #
+  D3DSHADER_PARAM_REGISTER_TYPE* {.importcpp: "enum _D3DSHADER_PARAM_REGISTER_TYPE", d3d9types_header, pure.} = enum
+    D3DSPR_TEMP           =  0, # Temporary Register File
+    D3DSPR_INPUT          =  1, # Input Register File
+    D3DSPR_CONST          =  2, # Constant Register File
+    D3DSPR_ADDR           =  3, # Address Register (VS)
+    # D3DSPR_TEXTURE        =  3, # Texture Register File (PS)
+    D3DSPR_RASTOUT        =  4, # Rasterizer Register File
+    D3DSPR_ATTROUT        =  5, # Attribute Output Register File
+    D3DSPR_TEXCRDOUT      =  6, # Texture Coordinate Output Register File
+    # D3DSPR_OUTPUT         =  6, # Output register file for VS3.0+
+    D3DSPR_CONSTINT       =  7, # Constant Integer Vector Register File
+    D3DSPR_COLOROUT       =  8, # Color Output Register File
+    D3DSPR_DEPTHOUT       =  9, # Depth Output Register File
+    D3DSPR_SAMPLER        = 10, # Sampler State Register File
+    D3DSPR_CONST2         = 11, # Constant Register File  2048 - 4095
+    D3DSPR_CONST3         = 12, # Constant Register File  4096 - 6143
+    D3DSPR_CONST4         = 13, # Constant Register File  6144 - 8191
+    D3DSPR_CONSTBOOL      = 14, # Constant Boolean register file
+    D3DSPR_LOOP           = 15, # Loop counter register file
+    D3DSPR_TEMPFLOAT16    = 16, # 16-bit float temp register file
+    D3DSPR_MISCTYPE       = 17, # Miscellaneous (single) registers.
+    D3DSPR_LABEL          = 18, # Label
+    D3DSPR_PREDICATE      = 19, # Predicate register
+    D3DSPR_FORCE_DWORD  = 0x7fffffff,         # force 32-bit size enum
+
+  D3DSHADER_MISCTYPE_OFFSETS* {.importcpp: "enum _D3DSHADER_MISCTYPE_OFFSETS", d3d9types_header, pure.} = enum
+    D3DSMO_POSITION = 0, # Input position x,y,z,rhw (PS)
+    D3DSMO_FACE = 1 # Floating point primitive area (PS)
+
+  # Register offsets in the Rasterizer Register File
+  #
+  D3DVS_RASTOUT_OFFSETS* {.importcpp: "enum _D3DVS_RASTOUT_OFFSETS", d3d9types_header, pure.} = enum
+    D3DSRO_POSITION = 0,
+    D3DSRO_FOG,
+    D3DSRO_POINT_SIZE,
+    D3DSRO_FORCE_DWORD  = 0x7fffffff # force 32-bit size enum
+
+  #---------------------------------------------------------------------
+  # Source operand addressing modes
+  #
+  D3DVS_ADDRESSMODE_TYPE* {.importcpp: "enum _D3DVS_ADDRESSMODE_TYPE", d3d9types_header, pure.} = enum
+    D3DVS_ADDRMODE_ABSOLUTE  = (0 shl D3DVS_ADDRESSMODE_SHIFT),
+    D3DVS_ADDRMODE_RELATIVE  = (1 shl D3DVS_ADDRESSMODE_SHIFT),
+    D3DVS_ADDRMODE_FORCE_DWORD = 0x7fffffff # force 32-bit size enum
+
+  D3DSHADER_ADDRESSMODE_TYPE* {.importcpp: "enum _D3DSHADER_ADDRESSMODE_TYPE", d3d9types_header, pure.} = enum
+    D3DSHADER_ADDRMODE_ABSOLUTE  = (0 shl D3DSHADER_ADDRESSMODE_SHIFT),
+    D3DSHADER_ADDRMODE_RELATIVE  = (1 shl D3DSHADER_ADDRESSMODE_SHIFT),
+    D3DSHADER_ADDRMODE_FORCE_DWORD = 0x7fffffff # force 32-bit size enum
 
   #---------------------------------------------------------------------
   # High order surfaces
@@ -230,13 +315,36 @@ type
     D3DFMT_CxV8U8               = 117,
     D3DFMT_FORCE_DWORD          = 0x7fffffff
 
+  # Display Modes */
+  D3DDISPLAYMODE* {.importcpp: "struct _D3DDISPLAYMODE", d3d9types_header, pure.} = object
+    Width*: uint
+    Height*: uint
+    RefreshRate*: uint
+    Format*: D3DFORMAT
+
+  # Creation Parameters */
+  D3DDEVICE_CREATION_PARAMETERS* {.importcpp: "struct _D3DDEVICE_CREATION_PARAMETERS", d3d9types_header, pure.} = object
+    AdapterOrdinal*: uint
+    DeviceType*: D3DDEVTYPE
+    hFocusWindow*: HWND
+    BehaviorFlags*: DWORD
+
+  # SwapEffects */
   D3DSWAPEFFECT* {.importcpp: "enum _D3DSWAPEFFECT", d3d9types_header, pure.} = enum
     D3DSWAPEFFECT_DISCARD           = 1,
     D3DSWAPEFFECT_FLIP              = 2,
     D3DSWAPEFFECT_COPY              = 3,
-
     D3DSWAPEFFECT_FORCE_DWORD       = 0x7fffffff
 
+  # Pool types */
+  D3DPOOL* {.importcpp: "enum _D3DPOOL", d3d9types_header, pure.} = enum
+    D3DPOOL_DEFAULT                 = 0,
+    D3DPOOL_MANAGED                 = 1,
+    D3DPOOL_SYSTEMMEM               = 2,
+    D3DPOOL_SCRATCH                 = 3,
+    D3DPOOL_FORCE_DWORD             = 0x7fffffff
+
+  # Resize Optional Parameters */
   D3DPRESENT_PARAMETERS* {.importcpp: "struct _D3DPRESENT_PARAMETERS_", d3d9types_header.} = object
     BackBufferWidth*: uint
     BackBufferHeight*: uint
@@ -256,6 +364,30 @@ type
     # FullScreen_RefreshRateInHz must be zero for Windowed mode #
     FullScreen_RefreshRateInHz*: uint
     PresentationInterval*: uint
+
+  # Gamma Ramp: Same as DX7 */
+  D3DGAMMARAMP* {.importcpp: "struct _D3DGAMMARAMP", d3d9types_header, pure.} = object
+    red*: array[256, WORD]
+    green*: array[256, WORD]
+    blue*: array[256, WORD]
+
+  # Back buffer types */
+  D3DBACKBUFFER_TYPE* {.importcpp: "enum _D3DBACKBUFFER_TYPE", d3d9types_header, pure.} = enum
+    D3DBACKBUFFER_TYPE_MONO         = 0,
+    D3DBACKBUFFER_TYPE_LEFT         = 1,
+    D3DBACKBUFFER_TYPE_RIGHT        = 2,
+    D3DBACKBUFFER_TYPE_FORCE_DWORD  = 0x7fffffff
+
+  # Types */
+  D3DRESOURCETYPE* {.importcpp: "enum _D3DRESOURCETYPE", d3d9types_header, pure.} = enum
+    D3DRTYPE_SURFACE                =  1,
+    D3DRTYPE_VOLUME                 =  2,
+    D3DRTYPE_TEXTURE                =  3,
+    D3DRTYPE_VOLUMETEXTURE          =  4,
+    D3DRTYPE_CUBETEXTURE            =  5,
+    D3DRTYPE_VERTEXBUFFER           =  6,
+    D3DRTYPE_INDEXBUFFER            =  7,
+    D3DRTYPE_FORCE_DWORD            = 0x7fffffff
 
   D3DRECT* {.importcpp: "struct _D3DRECT", d3d9types_header, pure.} = object
     x1*: LONG
