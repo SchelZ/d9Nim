@@ -6,6 +6,7 @@ else:
   {.passL: "Lib/x64/d3d9.lib".}
 {.pragma: d3d9_header, header: "Include/d3d9.h".}
 {.pragma: d3d9types_header, header: "Include/d3d9types.h".}
+{.pragma: d3d9caps_header, header: "Include/d3d9caps.h".}
 
 
 const 
@@ -131,6 +132,17 @@ const
   D3DPRESENTFLAG_DEVICECLIP* = 0x00000004
   D3DPRESENTFLAG_VIDEO* = 0x00000010
 
+  D3DTA_SELECTMASK* =        0x0000000f  # mask for arg selector
+  D3DTA_DIFFUSE* =           0x00000000  # select diffuse color (read only)
+  D3DTA_CURRENT* =           0x00000001  # select stage destination register (read/write)
+  D3DTA_TEXTURE* =           0x00000002  # select texture color (read only)
+  D3DTA_TFACTOR* =           0x00000003  # select D3DRS_TEXTUREFACTOR (read only)
+  D3DTA_SPECULAR* =          0x00000004  # select specular color (read only)
+  D3DTA_TEMP* =              0x00000005  # select temporary register color (read/write)
+  D3DTA_CONSTANT* =          0x00000006  # select texture stage constant
+  D3DTA_COMPLEMENT* =        0x00000010  # take 1.0 - x (read modifier)
+  D3DTA_ALPHAREPLICATE* =    0x00000020  # replicate alpha to color components (read modifier)
+
 
 template MAKEFOURCC*(ch0: char, ch1: char, ch2: char, ch3: char): auto = (cast[DWORD](cast[BYTE](ch0)) or (cast[DWORD](cast[BYTE](ch1)) shl 8) or (cast[DWORD](cast[BYTE](ch2)) shl 16) or (cast[DWORD](cast[BYTE](ch3)) shl 24 ))
 template D3DFVF_TEXCOORDSIZE3*(CoordIndex: untyped): untyped = (D3DFVF_TEXTUREFORMAT3 shl (CoordIndex*2 + 16))
@@ -138,10 +150,9 @@ template D3DFVF_TEXCOORDSIZE2*(CoordIndex: untyped): untyped = (D3DFVF_TEXTUREFO
 template D3DFVF_TEXCOORDSIZE4*(CoordIndex: untyped): untyped = (D3DFVF_TEXTUREFORMAT4 shl (CoordIndex*2 + 16))
 template D3DFVF_TEXCOORDSIZE1*(CoordIndex: untyped): untyped = (D3DFVF_TEXTUREFORMAT1 shl (CoordIndex*2 + 16))
 
-
+# d3d9types.h ------------------------------------------
 type 
-
-  D3DSHADEMODE* {.importcpp: "enum _D3DSHADEMODE", d3d9types_header, pure.} = enum
+  D3DSHADEMODE* {.importcpp: "enum _D3DSHADEMODE", d3d9types_header, pure, size: int32.sizeof.} = enum
     D3DSHADE_FLAT               = 1,
     D3DSHADE_GOURAUD            = 2,
     D3DSHADE_PHONG              = 3,
@@ -153,7 +164,48 @@ type
     D3DFILL_SOLID               = 3,
     D3DFILL_FORCE_DWORD         = 0x7fffffff # force 32-bit size enum */
 
-  D3DVIEWPORT9* {.importcpp: "enum _D3DVIEWPORT9", d3d9types_header, pure.} = object
+  D3DBLEND* {.importcpp: "enum _D3DBLEND", d3d9types_header, pure, size: int32.sizeof.} = enum
+    D3DBLEND_ZERO               = 1,
+    D3DBLEND_ONE                = 2,
+    D3DBLEND_SRCCOLOR           = 3,
+    D3DBLEND_INVSRCCOLOR        = 4,
+    D3DBLEND_SRCALPHA           = 5,
+    D3DBLEND_INVSRCALPHA        = 6,
+    D3DBLEND_DESTALPHA          = 7,
+    D3DBLEND_INVDESTALPHA       = 8,
+    D3DBLEND_DESTCOLOR          = 9,
+    D3DBLEND_INVDESTCOLOR       = 10,
+    D3DBLEND_SRCALPHASAT        = 11,
+    D3DBLEND_BOTHSRCALPHA       = 12,
+    D3DBLEND_BOTHINVSRCALPHA    = 13,
+    D3DBLEND_BLENDFACTOR        = 14, # Only supported if D3DPBLENDCAPS_BLENDFACTOR is on */
+    D3DBLEND_INVBLENDFACTOR     = 15, # Only supported if D3DPBLENDCAPS_BLENDFACTOR is on */
+    D3DBLEND_FORCE_DWORD        = 0x7fffffff # force 32-bit size enum */
+
+  D3DBLENDOP* {.importcpp: "enum _D3DBLENDOP", d3d9types_header, pure, size: int32.sizeof.} = enum
+    D3DBLENDOP_ADD              = 1,
+    D3DBLENDOP_SUBTRACT         = 2,
+    D3DBLENDOP_REVSUBTRACT      = 3,
+    D3DBLENDOP_MIN              = 4,
+    D3DBLENDOP_MAX              = 5,
+    D3DBLENDOP_FORCE_DWORD      = 0x7fffffff # force 32-bit size enum */
+
+  D3DTEXTUREADDRESS* {.importcpp: "enum _D3DTEXTUREADDRESS", d3d9types_header, pure, size: int32.sizeof.} = enum
+      D3DTADDRESS_WRAP            = 1,
+      D3DTADDRESS_MIRROR          = 2,
+      D3DTADDRESS_CLAMP           = 3,
+      D3DTADDRESS_BORDER          = 4,
+      D3DTADDRESS_MIRRORONCE      = 5,
+      D3DTADDRESS_FORCE_DWORD     = 0x7fffffff # force 32-bit size enum */
+
+  D3DCULL* {.importcpp: "enum _D3DCULL", d3d9types_header, pure.} = enum
+    D3DCULL_NONE                = 1,
+    D3DCULL_CW                  = 2,
+    D3DCULL_CWW                 = 3,
+    D3DCULL_FORCE_DWORD         = 0x7fffffff
+
+
+  D3DVIEWPORT9* {.importcpp: "struct _D3DVIEWPORT9", d3d9types_header, pure.} = object
     X*: DWORD
     Y*: DWORD             # Viewport Top left */
     Width*: DWORD
@@ -163,7 +215,7 @@ type
 
   # destination/source parameter register type
   #
-  D3DSHADER_PARAM_REGISTER_TYPE* {.importcpp: "enum _D3DSHADER_PARAM_REGISTER_TYPE", d3d9types_header, pure.} = enum
+  D3DSHADER_PARAM_REGISTER_TYPE* {.importcpp: "enum _D3DSHADER_PARAM_REGISTER_TYPE", d3d9types_header, pure, size: int32.sizeof.} = enum
     D3DSPR_TEMP           =  0, # Temporary Register File
     D3DSPR_INPUT          =  1, # Input Register File
     D3DSPR_CONST          =  2, # Constant Register File
@@ -552,6 +604,113 @@ type
     D3DRS_BLENDOPALPHA              = 209,  # Blending operation for the alpha channel when D3DRS_SEPARATEDESTALPHAENABLE is TRUE */
     D3DRS_FORCE_DWORD               = 0x7fffffff, # force 32-bit size enum */
 
+  # 
+  # State enumerants for per-stage processing of fixed function pixel processing
+  # Two of these affect fixed function vertex processing as well: TEXTURETRANSFORMFLAGS and TEXCOORDINDEX.
+  D3DTEXTURESTAGESTATETYPE* {.importcpp: "enum _D3DTEXTURESTAGESTATETYPE", d3d9types_header, pure, size: int32.sizeof.} = enum
+    D3DTSS_COLOROP        =  1, # D3DTEXTUREOP - per-stage blending controls for color channels */
+    D3DTSS_COLORARG1      =  2, # D3DTA_* (texture arg) */
+    D3DTSS_COLORARG2      =  3, # D3DTA_* (texture arg) */
+    D3DTSS_ALPHAOP        =  4, # D3DTEXTUREOP - per-stage blending controls for alpha channel */
+    D3DTSS_ALPHAARG1      =  5, # D3DTA_* (texture arg) */
+    D3DTSS_ALPHAARG2      =  6, # D3DTA_* (texture arg) */
+    D3DTSS_BUMPENVMAT00   =  7, # float (bump mapping matrix) */
+    D3DTSS_BUMPENVMAT01   =  8, # float (bump mapping matrix) */
+    D3DTSS_BUMPENVMAT10   =  9, # float (bump mapping matrix) */
+    D3DTSS_BUMPENVMAT11   = 10, # float (bump mapping matrix) */
+    D3DTSS_TEXCOORDINDEX  = 11, # identifies which set of texture coordinates index this texture */
+    D3DTSS_BUMPENVLSCALE  = 22, # float scale for bump map luminance */
+    D3DTSS_BUMPENVLOFFSET = 23, # float offset for bump map luminance */
+    D3DTSS_TEXTURETRANSFORMFLAGS = 24, # D3DTEXTURETRANSFORMFLAGS controls texture transform */
+    D3DTSS_COLORARG0      = 26, # D3DTA_* third arg for triadic ops */
+    D3DTSS_ALPHAARG0      = 27, # D3DTA_* third arg for triadic ops */
+    D3DTSS_RESULTARG      = 28, # D3DTA_* arg for result (CURRENT or TEMP) */
+    D3DTSS_CONSTANT       = 32, # Per-stage constant D3DTA_CONSTANT */
+    D3DTSS_FORCE_DWORD   = 0x7fffffff # force 32-bit size enum */
+
+  #
+  # State enumerants for per-sampler texture processing.
+  #
+  D3DSAMPLERSTATETYPE* {.importcpp: "enum _D3DSAMPLERSTATETYPE", d3d9types_header, pure, size: int32.sizeof.} = enum
+    D3DSAMP_ADDRESSU       = 1,  # D3DTEXTUREADDRESS for U coordinate */
+    D3DSAMP_ADDRESSV       = 2,  # D3DTEXTUREADDRESS for V coordinate */
+    D3DSAMP_ADDRESSW       = 3,  # D3DTEXTUREADDRESS for W coordinate */
+    D3DSAMP_BORDERCOLOR    = 4,  # D3DCOLOR */
+    D3DSAMP_MAGFILTER      = 5,  # D3DTEXTUREFILTER filter to use for magnification */
+    D3DSAMP_MINFILTER      = 6,  # D3DTEXTUREFILTER filter to use for minification */
+    D3DSAMP_MIPFILTER      = 7,  # D3DTEXTUREFILTER filter to use between mipmaps during minification */
+    D3DSAMP_MIPMAPLODBIAS  = 8,  # float Mipmap LOD bias */
+    D3DSAMP_MAXMIPLEVEL    = 9,  # DWORD 0..(n-1) LOD index of largest map to use (0 == largest) */
+    D3DSAMP_MAXANISOTROPY  = 10, # DWORD maximum anisotropy */
+    D3DSAMP_SRGBTEXTURE    = 11, # Default = 0 (which means Gamma 1.0, no correction required.) else correct for Gamma = 2.2 */
+    D3DSAMP_ELEMENTINDEX   = 12, # When multi-element texture is assigned to sampler, this indicates which element index to use.  Default = 0.  */
+    D3DSAMP_DMAPOFFSET     = 13, # Offset in vertices in the pre-sampled displacement map. Only valid for D3DDMAPSAMPLER sampler  */
+    D3DSAMP_FORCE_DWORD   = 0x7fffffff # force 32-bit size enum */
+
+  D3DTEXTUREOP* {.importcpp: "enum _D3DTEXTUREOP", d3d9types_header, pure, size: int32.sizeof.} = enum
+    # Control
+    D3DTOP_DISABLE              = 1,      # disables stage
+    D3DTOP_SELECTARG1           = 2,      # the default
+    D3DTOP_SELECTARG2           = 3,
+
+    # Modulate
+    D3DTOP_MODULATE             = 4,      # multiply args together
+    D3DTOP_MODULATE2X           = 5,      # multiply and  1 bit
+    D3DTOP_MODULATE4X           = 6,      # multiply and  2 bits
+
+    # Add
+    D3DTOP_ADD                  =  7,   # add arguments together
+    D3DTOP_ADDSIGNED            =  8,   # add with -0.5 bias
+    D3DTOP_ADDSIGNED2X          =  9,   # as above but left  1 bit
+    D3DTOP_SUBTRACT             = 10,   # Arg1 - Arg2, with no saturation
+    D3DTOP_ADDSMOOTH            = 11,   # add 2 args, subtract product
+                                        # Arg1 + Arg2 - Arg1*Arg2
+                                        # = Arg1 + (1-Arg1)*Arg2
+
+    # Linear alpha blend: Arg1*(Alpha) + Arg2*(1-Alpha)
+    D3DTOP_BLENDDIFFUSEALPHA    = 12, # iterated alpha
+    D3DTOP_BLENDTEXTUREALPHA    = 13, # texture alpha
+    D3DTOP_BLENDFACTORALPHA     = 14, # alpha from D3DRS_TEXTUREFACTOR
+
+    # Linear alpha blend with pre-multiplied arg1 input: Arg1 + Arg2*(1-Alpha)
+    D3DTOP_BLENDTEXTUREALPHAPM  = 15, # texture alpha
+    D3DTOP_BLENDCURRENTALPHA    = 16, # by alpha of current color
+
+    # Specular mapping
+    D3DTOP_PREMODULATE            = 17,     # modulate with next texture before use
+    D3DTOP_MODULATEALPHA_ADDCOLOR = 18,     # Arg1.RGB + Arg1.A*Arg2.RGB
+                                            # COLOROP only
+    D3DTOP_MODULATECOLOR_ADDALPHA = 19,     # Arg1.RGB*Arg2.RGB + Arg1.A
+                                            # COLOROP only
+    D3DTOP_MODULATEINVALPHA_ADDCOLOR = 20,  # (1-Arg1.A)*Arg2.RGB + Arg1.RGB
+                                            # COLOROP only
+    D3DTOP_MODULATEINVCOLOR_ADDALPHA = 21,  # (1-Arg1.RGB)*Arg2.RGB + Arg1.A
+                                            # COLOROP only
+
+    # Bump mapping
+    D3DTOP_BUMPENVMAP           = 22, # per pixel env map perturbation
+    D3DTOP_BUMPENVMAPLUMINANCE  = 23, # with luminance channel
+
+    # This can do either diffuse or specular bump mapping with correct input.
+    # Performs the function (Arg1.R*Arg2.R + Arg1.G*Arg2.G + Arg1.B*Arg2.B)
+    # where each component has been scaled and offset to make it signed.
+    # The result is replicated into all four (including alpha) channels.
+    # This is a valid COLOROP only.
+    D3DTOP_DOTPRODUCT3          = 24,
+
+    # Triadic ops
+    D3DTOP_MULTIPLYADD          = 25, # Arg0 + Arg1*Arg2
+    D3DTOP_LERP                 = 26, # (Arg0)*Arg1 + (1-Arg0)*Arg2
+    D3DTOP_FORCE_DWORD = 0x7fffffff
+
+  D3DTEXTUREFILTERTYPE* {.importcpp: "enum _D3DTEXTUREFILTERTYPE", d3d9types_header, pure, size: int32.sizeof.} = enum
+    D3DTEXF_NONE            = 0,    # filtering disabled (valid for mip filter only)
+    D3DTEXF_POINT           = 1,    # nearest
+    D3DTEXF_LINEAR          = 2,    # linear interpolation
+    D3DTEXF_ANISOTROPIC     = 3,    # anisotropic
+    D3DTEXF_PYRAMIDALQUAD   = 6,    # 4-sample tent
+    D3DTEXF_GAUSSIANQUAD    = 7,    # 4-sample gaussian
+    D3DTEXF_FORCE_DWORD     = 0x7fffffff   # force 32-bit size enum
 
   D3DRECT* {.importcpp: "struct _D3DRECT", d3d9types_header, pure.} = object
     x1*: LONG
@@ -576,6 +735,128 @@ type
     rdh*: RGNDATAHEADER
     Buffer*: array[1, char]
 
+
+# d3d9caps.h ------------------------------------------
+const 
+  D3DVS20CAPS_PREDICATION* = (1 shl 0)
+  D3DVS20_MAX_DYNAMICFLOWCONTROLDEPTH* = 24
+  D3DVS20_MIN_DYNAMICFLOWCONTROLDEPTH* = 0
+  D3DVS20_MAX_NUMTEMPS* = 32
+  D3DVS20_MIN_NUMTEMPS* = 12
+  D3DVS20_MAX_STATICFLOWCONTROLDEPTH* = 4
+  D3DVS20_MIN_STATICFLOWCONTROLDEPTH* = 1
+
+type
+  D3DVSHADERCAPS2_0* {.importcpp: "struct _D3DVSHADERCAPS2_0", d3d9caps_header, pure.} = object
+    Caps*: DWORD
+    DynamicFlowControlDepth*: int
+    NumTemps*: int
+    StaticFlowControlDepth*: int
+
+
+  D3DPSHADERCAPS2_0* {.importcpp: "struct _D3DPSHADERCAPS2_0", d3d9caps_header, pure.} = object
+    Caps*: DWORD
+    DynamicFlowControlDepth*: int
+    NumTemps*: int
+    StaticFlowControlDepth*: int
+    NumInstructionSlots*: int
+
+  D3DCAPS9* {.importcpp: "struct _D3DCAPS9", d3d9caps_header, pure.} = object
+    #Device Info */
+    DeviceType*: D3DDEVTYPE
+    AdapterOrdinal*: uint
+
+    # Caps from DX7 Draw */
+    Caps: DWORD
+    Caps2: DWORD
+    Caps3*: DWORD
+    PresentationIntervals*: DWORD
+
+    # Cursor Caps */
+    # DWORD   CursorCaps;
+
+    # # 3D Device Caps */
+    # DWORD   DevCaps;
+
+    # DWORD   PrimitiveMiscCaps;
+    # DWORD   RasterCaps;
+    # DWORD   ZCmpCaps;
+    # DWORD   SrcBlendCaps;
+    # DWORD   DestBlendCaps;
+    # DWORD   AlphaCmpCaps;
+    # DWORD   ShadeCaps;
+    # DWORD   TextureCaps;
+    # DWORD   TextureFilterCaps;          # D3DPTFILTERCAPS for IDirect3DTexture9's
+    # DWORD   CubeTextureFilterCaps;      # D3DPTFILTERCAPS for IDirect3DCubeTexture9's
+    # DWORD   VolumeTextureFilterCaps;    # D3DPTFILTERCAPS for IDirect3DVolumeTexture9's
+    # DWORD   TextureAddressCaps;         # D3DPTADDRESSCAPS for IDirect3DTexture9's
+    # DWORD   VolumeTextureAddressCaps;   # D3DPTADDRESSCAPS for IDirect3DVolumeTexture9's
+
+    # DWORD   LineCaps;                   # D3DLINECAPS
+
+    # DWORD   MaxTextureWidth, MaxTextureHeight;
+    # DWORD   MaxVolumeExtent;
+
+    # DWORD   MaxTextureRepeat;
+    # DWORD   MaxTextureAspectRatio;
+    # DWORD   MaxAnisotropy;
+    # float   MaxVertexW;
+
+    # float   GuardBandLeft;
+    # float   GuardBandTop;
+    # float   GuardBandRight;
+    # float   GuardBandBottom;
+
+    # float   ExtentsAdjust;
+    # DWORD   StencilCaps;
+
+    # DWORD   FVFCaps;
+    # DWORD   TextureOpCaps;
+    # DWORD   MaxTextureBlendStages;
+    # DWORD   MaxSimultaneousTextures;
+
+    # DWORD   VertexProcessingCaps;
+    # DWORD   MaxActiveLights;
+    # DWORD   MaxUserClipPlanes;
+    # DWORD   MaxVertexBlendMatrices;
+    # DWORD   MaxVertexBlendMatrixIndex;
+
+    # float   MaxPointSize;
+
+    # DWORD   MaxPrimitiveCount;          # max number of primitives per DrawPrimitive call
+    # DWORD   MaxVertexIndex;
+    # DWORD   MaxStreams;
+    # DWORD   MaxStreamStride;            # max stride for SetStreamSource
+
+    # DWORD   VertexShaderVersion;
+    # DWORD   MaxVertexShaderConst;       # number of vertex shader constant registers
+
+    # DWORD   PixelShaderVersion;
+    # float   PixelShader1xMaxValue;      # max value storable in registers of ps.1.x shaders
+
+    # # Here are the DX9 specific ones
+    # DWORD   DevCaps2;
+
+    # float   MaxNpatchTessellationLevel;
+    # DWORD   Reserved5;
+
+    # UINT    MasterAdapterOrdinal;       # ordinal of master adaptor for adapter group
+    # UINT    AdapterOrdinalInGroup;      # ordinal inside the adapter group
+    # UINT    NumberOfAdaptersInGroup;    # number of adapters in this adapter group (only if master)
+    # DWORD   DeclTypes;                  # Data types, supported in vertex declarations
+    # DWORD   NumSimultaneousRTs;         # Will be at least 1
+    # DWORD   StretchRectFilterCaps;      # Filter caps supported by StretchRect
+    # D3DVSHADERCAPS2_0 VS20Caps;
+    # D3DPSHADERCAPS2_0 PS20Caps;
+    # DWORD   VertexTextureFilterCaps;    # D3DPTFILTERCAPS for IDirect3DTexture9's for texture, used in vertex shaders
+    # DWORD   MaxVShaderInstructionsExecuted; # maximum number of vertex shader instructions that can be executed
+    # DWORD   MaxPShaderInstructionsExecuted; # maximum number of pixel shader instructions that can be executed
+    # DWORD   MaxVertexShader30InstructionSlots; 
+    # DWORD   MaxPixelShader30InstructionSlots;
+
+
+
+
 # typedef interface IDirect3DResource9            IDirect3DResource9;
 # typedef interface IDirect3DBaseTexture9         IDirect3DBaseTexture9;
 # typedef interface IDirect3DTexture9             IDirect3DTexture9;
@@ -589,6 +870,10 @@ type
 # typedef interface IDirect3DQuery9               IDirect3DQuery9;
 
 type 
+  IDirect3DSurface9* {.importcpp: "IDirect3DSurface9", d3d9_header, inheritable, pure.} = object
+  LPDIRECT3DSURFACE9* {.importcpp: "LPDIRECT3DSURFACE9",  d3d9_header.} = ptr IDirect3DSurface9
+  PDIRECT3DSURFACE9* {.importcpp: "PDIRECT3DSURFACE9",  d3d9_header.} = ptr IDirect3DSurface9
+
   #---------------------------------------------------------------------
   IDirect3D9* {.importcpp: "IDirect3D9",  d3d9_header, inheritable, pure.} = object
     Release*: proc (): ULONG {.stdcall.}
@@ -598,7 +883,21 @@ type
 
   #---------------------------------------------------------------------
   IDirect3DDevice9* {.importcpp: "IDirect3DDevice9", d3d9_header, inheritable, pure.} = object
+    # IUnknown methods ***/
+    AddRef*: proc(): ULONG  {.stdcall.}
     Release*: proc (): ULONG  {.stdcall.}
+
+    # IDirect3DDevice9 methods ***/
+    TestCooperativeLevel*: proc(): HRESULT {.stdcall.}
+    GetAvailableTextureMem*: proc(): uint {.stdcall.}
+    EvictManagedResources*: proc(): HRESULT {.stdcall.}
+    GetDirect3D*: proc(ppD3D9: ptr ptr IDirect3D9): HRESULT {.stdcall.}
+    GetDeviceCaps*: proc(pCaps: ptr D3DCAPS9): HRESULT {.stdcall.}
+    GetDisplayMode*: proc(iSwapChain: uint, pMode: ptr D3DDISPLAYMODE): HRESULT {.stdcall.}
+    GetCreationParameters*: proc(pParameters: ptr D3DDEVICE_CREATION_PARAMETERS): HRESULT {.stdcall.}
+    SetCursorProperties*: proc(XHotSpot: uint, YHotSpot: uint, pCursorBitmap: ptr IDirect3DSurface9): HRESULT {.stdcall.}
+    SetCursorPosition*: proc(X: int,Y: int, Flags: DWORD): void {.stdcall.}
+    ShowCursor*: proc(bShow: bool): bool {.stdcall.}
     Clear*: proc (Count: DWORD, pRects: ptr D3DRECT, Flags: DWORD, Color: DWORD, Z: float, Stencil: DWORD): HRESULT {.stdcall.}
     BeginScene*: proc (): HRESULT {.stdcall.}
     EndScene*: proc (): HRESULT {.stdcall.}
@@ -611,6 +910,11 @@ type
     GetPixelShader*: proc (ppShader: ptr ptr IDirect3DPixelShader9): HRESULT {.stdcall.}
     SetRenderState*: proc (State: D3DRENDERSTATETYPE, Value: DWORD): HRESULT {.stdcall.}
     GetRenderState*: proc (State: D3DRENDERSTATETYPE, pValue: ptr DWORD): HRESULT {.stdcall.}
+    GetTextureStageState*: proc (Stage: DWORD, Type: D3DTEXTURESTAGESTATETYPE, pValue: ptr DWORD): HRESULT {.stdcall.}
+    SetTextureStageState*: proc (Stage: DWORD, Type: D3DTEXTURESTAGESTATETYPE, Value: DWORD): HRESULT {.stdcall.}
+    GetSamplerState*: proc (Sampler: DWORD, Type: D3DSAMPLERSTATETYPE, pValue: ptr DWORD): HRESULT {.stdcall.}
+    SetSamplerState*: proc (Sampler: DWORD, Type: D3DSAMPLERSTATETYPE, Value: DWORD): HRESULT {.stdcall.}
+    ValidateDevice*: proc (pNumPasses: ptr DWORD): HRESULT {.stdcall.}
 
   LPDIRECT3DDEVICE9* {.importcpp: "LPDIRECT3DDEVICE9", d3d9_header.} = ptr IDirect3DDevice9
   PDIRECT3DDEVICE9* {.importcpp: "PDIRECT3DDEVICE9", d3d9_header.} = ptr IDirect3DDevice9
@@ -659,16 +963,22 @@ type
 
 
   IDirect3DVertexBuffer9* {.importcpp: "IDirect3DVertexBuffer9", d3d9_header, inheritable, pure.} = object
+    AddRef*: proc(): ULONG {.stdcall.}
+    Release*: proc(): ULONG {.stdcall.}
   LPDIRECT3DVERTEXBUFFER9* {.importcpp: "LPDIRECT3DVERTEXBUFFER9", d3d9_header.} = ptr IDirect3DVertexBuffer9
   PDIRECT3DVERTEXBUFFER9* {.importcpp: "PDIRECT3DVERTEXBUFFER9", d3d9_header.} = ptr IDirect3DVertexBuffer9
 
 
   IDirect3DIndexBuffer9* {.importcpp: "IDirect3DIndexBuffer9", d3d9_header, inheritable, pure.} = object
+    AddRef*: proc(): ULONG {.stdcall.}
+    Release*: proc(): ULONG {.stdcall.}
   LPDIRECT3DINDEXBUFFER9* {.importcpp: "LPDIRECT3DINDEXBUFFER9", d3d9_header.} = ptr IDirect3DIndexBuffer9
   PDIRECT3DINDEXBUFFER9* {.importcpp: "PDIRECT3DINDEXBUFFER9", d3d9_header.} = ptr IDirect3DIndexBuffer9
 
 
   IDirect3DTexture9* {.importcpp: "IDirect3DTexture9",  d3d9_header, inheritable, pure.} = object
+    AddRef*: proc(): ULONG {.stdcall.}
+    Release*: proc(): ULONG {.stdcall.}
   LPDIRECT3DTEXTURE9* {.importcpp: "LPDIRECT3DTEXTURE9", d3d9_header.} = ptr IDirect3DTexture9
   PDIRECT3DTEXTURE9* {.importcpp: "PDIRECT3DTEXTURE9", d3d9_header.} = ptr IDirect3DTexture9 
 
