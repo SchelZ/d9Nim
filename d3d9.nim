@@ -10,6 +10,7 @@ else:
 
 
 const 
+  D3D_OK* = S_OK
   D3D_SDK_VERSION*: uint = 31
   D3DADAPTER_DEFAULT*: uint = 0
   D3DCREATE_SOFTWARE_VERTEXPROCESSING*: DWORD = 0x00000020
@@ -144,6 +145,38 @@ const
   D3DTA_ALPHAREPLICATE* =    0x00000020  # replicate alpha to color components (read modifier)
 
 
+  # Usages */
+  D3DUSAGE_RENDERTARGET* =       0x00000001.int32
+  D3DUSAGE_DEPTHSTENCIL* =       0x00000002.int32
+  D3DUSAGE_DYNAMIC* =            0x00000200.int32
+
+  D3DUSAGE_AUTOGENMIPMAP* =      0x00000400.int32
+  D3DUSAGE_DMAP* =               0x00004000.int32
+
+  # The following usages are valid only for querying CheckDeviceFormat
+  D3DUSAGE_QUERY_LEGACYBUMPMAP* =            0x00008000.int32
+  D3DUSAGE_QUERY_SRGBREAD* =                 0x00010000.int32 
+  D3DUSAGE_QUERY_FILTER* =                    0x00020000.int32 
+  D3DUSAGE_QUERY_SRGBWRITE* =                 0x00040000.int32 
+  D3DUSAGE_QUERY_POSTPIXELSHADER_BLENDING* =  0x00080000.int32 
+  D3DUSAGE_QUERY_VERTEXTEXTURE* =             0x00100000.int32 
+
+  # Usages for Vertex/Index buffers */
+  D3DUSAGE_WRITEONLY* =           0x00000008.int32 
+  D3DUSAGE_SOFTWAREPROCESSING* =  0x00000010.int32 
+  D3DUSAGE_DONOTCLIP* =           0x00000020.int32 
+  D3DUSAGE_POINTS* =              0x00000040.int32 
+  D3DUSAGE_RTPATCHES* =           0x00000080.int32 
+  D3DUSAGE_NPATCHES* =            0x00000100.int32 
+
+  D3DLOCK_READONLY* =           0x00000010.int32 
+  D3DLOCK_DISCARD* =            0x00002000.int32 
+  D3DLOCK_NOOVERWRITE* =        0x00001000.int32 
+  D3DLOCK_NOSYSLOCK* =          0x00000800.int32 
+  D3DLOCK_DONOTWAIT* =          0x00004000.int32             
+
+  D3DLOCK_NO_DIRTY_UPDATE* =     0x00008000.int32 
+
 template MAKEFOURCC*(ch0: char, ch1: char, ch2: char, ch3: char): auto = (cast[DWORD](cast[BYTE](ch0)) or (cast[DWORD](cast[BYTE](ch1)) shl 8) or (cast[DWORD](cast[BYTE](ch2)) shl 16) or (cast[DWORD](cast[BYTE](ch3)) shl 24 ))
 template D3DFVF_TEXCOORDSIZE3*(CoordIndex: untyped): untyped = (D3DFVF_TEXTUREFORMAT3 shl (CoordIndex*2 + 16))
 template D3DFVF_TEXCOORDSIZE2*(CoordIndex: untyped): untyped = (D3DFVF_TEXTUREFORMAT2)
@@ -151,6 +184,7 @@ template D3DFVF_TEXCOORDSIZE4*(CoordIndex: untyped): untyped = (D3DFVF_TEXTUREFO
 template D3DFVF_TEXCOORDSIZE1*(CoordIndex: untyped): untyped = (D3DFVF_TEXTUREFORMAT1 shl (CoordIndex*2 + 16))
 
 # d3d9types.h ------------------------------------------
+
 type 
   D3DSHADEMODE* {.importcpp: "enum _D3DSHADEMODE", d3d9types_header, pure, size: int32.sizeof.} = enum
     D3DSHADE_FLAT               = 1,
@@ -198,12 +232,15 @@ type
       D3DTADDRESS_MIRRORONCE      = 5,
       D3DTADDRESS_FORCE_DWORD     = 0x7fffffff # force 32-bit size enum */
 
-  D3DCULL* {.importcpp: "enum _D3DCULL", d3d9types_header, pure.} = enum
+  D3DCULL* {.importcpp: "enum _D3DCULL", d3d9types_header, pure, size: int32.sizeof.} = enum
     D3DCULL_NONE                = 1,
     D3DCULL_CW                  = 2,
     D3DCULL_CWW                 = 3,
     D3DCULL_FORCE_DWORD         = 0x7fffffff
 
+  D3DLOCKED_RECT* {.importcpp: "struct _D3DLOCKED_RECT", d3d9types_header, pure.} = object
+    Pitch*: int
+    pBits*: pointer
 
   D3DVIEWPORT9* {.importcpp: "struct _D3DVIEWPORT9", d3d9types_header, pure.} = object
     X*: DWORD
@@ -411,18 +448,30 @@ type
 
     # Floating point surface formats
 
-    # s10e5 formats (16-bits per channel)
+    # s10e5 formats (16-bits per channe 
     D3DFMT_R16F                 = 111,
     D3DFMT_G16R16F              = 112,
     D3DFMT_A16B16G16R16F        = 113,
 
-    # IEEE s23e8 formats (32-bits per channel)
+    # IEEE s23e8 formats (32-bits per channe 
     D3DFMT_R32F                 = 114,
     D3DFMT_G32R32F              = 115,
     D3DFMT_A32B32G32R32F        = 116,
 
     D3DFMT_CxV8U8               = 117,
     D3DFMT_FORCE_DWORD          = 0x7fffffff
+
+  # Surface Description */  
+  D3DSURFACE_DESC* {.importcpp: "struct _D3DSURFACE_DESC", d3d9types_header, pure.} = object
+    Format*: D3DFORMAT
+    Type*: D3DRESOURCETYPE
+    Usage*: DWORD
+    Pool*: D3DPOOL
+
+    MultiSampleType*: D3DMULTISAMPLE_TYPE
+    MultiSampleQuality*: DWORD
+    Width*: UINT
+    Height*: UINT
 
   # Display Modes */
   D3DDISPLAYMODE* {.importcpp: "struct _D3DDISPLAYMODE", d3d9types_header, pure.} = object
@@ -712,6 +761,46 @@ type
     D3DTEXF_GAUSSIANQUAD    = 7,    # 4-sample gaussian
     D3DTEXF_FORCE_DWORD     = 0x7fffffff   # force 32-bit size enum
 
+  D3DTRANSFORMSTATETYPE* {.importcpp: "enum _D3DTRANSFORMSTATETYPE", d3d9types_header, pure, size: int32.sizeof.} = enum
+    D3DTS_VIEW          = 2,
+    D3DTS_PROJECTION    = 3,
+    D3DTS_TEXTURE0      = 16,
+    D3DTS_TEXTURE1      = 17,
+    D3DTS_TEXTURE2      = 18,
+    D3DTS_TEXTURE3      = 19,
+    D3DTS_TEXTURE4      = 20,
+    D3DTS_TEXTURE5      = 21,
+    D3DTS_TEXTURE6      = 22,
+    D3DTS_TEXTURE7      = 23,
+    D3DTS_FORCE_DWORD    = 0x7fffffff # force 32-bit size enum */
+
+  D3DVERTEXBUFFER_DESC* {.importcpp: "struct _D3DVERTEXBUFFER_DESC", d3d9types_header, pure.} = object
+    Format*: D3DFORMAT
+    Type*: D3DRESOURCETYPE
+    Usage*: DWORD
+    Pool*: D3DPOOL
+    Size*: UINT
+    FVF*: DWORD
+
+  D3DMATRIX* {.importcpp: "struct _D3DMATRIX", d3d9types_header, bycopy, union, pure.} = object
+    v11*: float32 
+    v12*: float32 
+    v13*: float32 
+    v14*: float32
+    v21*: float32 
+    v22*: float32 
+    v23*: float32 
+    v24*: float32
+    v31*: float32 
+    v32*: float32 
+    v33*: float32 
+    v34*: float32
+    v41*: float32 
+    v42*: float32 
+    v43*: float32
+    v44*: float32
+    m*: array[4, array[4, float32]]
+
   D3DRECT* {.importcpp: "struct _D3DRECT", d3d9types_header, pure.} = object
     x1*: LONG
     y1*: LONG
@@ -735,6 +824,14 @@ type
     rdh*: RGNDATAHEADER
     Buffer*: array[1, char]
 
+
+proc D3DTS_WORLDMATRIX(index: int): D3DTRANSFORMSTATETYPE = 
+  return D3DTRANSFORMSTATETYPE(index + 256)
+const
+  D3DTS_WORLD* = D3DTS_WORLDMATRIX(0)
+  D3DTS_WORLD1* = D3DTS_WORLDMATRIX(1)
+  D3DTS_WORLD2* = D3DTS_WORLDMATRIX(2)
+  D3DTS_WORLD3* = D3DTS_WORLDMATRIX(3)  
 
 # d3d9caps.h ------------------------------------------
 const 
@@ -898,23 +995,36 @@ type
     SetCursorProperties*: proc(XHotSpot: uint, YHotSpot: uint, pCursorBitmap: ptr IDirect3DSurface9): HRESULT {.stdcall.}
     SetCursorPosition*: proc(X: int,Y: int, Flags: DWORD): void {.stdcall.}
     ShowCursor*: proc(bShow: bool): bool {.stdcall.}
-    Clear*: proc (Count: DWORD, pRects: ptr D3DRECT, Flags: DWORD, Color: DWORD, Z: float, Stencil: DWORD): HRESULT {.stdcall.}
-    BeginScene*: proc (): HRESULT {.stdcall.}
-    EndScene*: proc (): HRESULT {.stdcall.}
-    Present*: proc (pSourceRect: ptr RECTT, pDestRect: ptr RECTT, hDestWindowOverride: HWND, pDirtyRegion: ptr RGNDATA): HRESULT {.stdcall.}
-    Reset*: proc (pPresentationParameters: ptr D3DPRESENT_PARAMETERS): HRESULT {.stdcall.}
-    SetVertexShader*: proc (pShader: ptr IDirect3DVertexShader9): HRESULT {.stdcall.}
-    GetVertexShader*: proc (pShader: ptr ptr IDirect3DVertexShader9): HRESULT {.stdcall.}
-    SetViewport*: proc (pViewport: ptr D3DVIEWPORT9): HRESULT {.stdcall.}
-    SetPixelShader*: proc (pShader: ptr IDirect3DPixelShader9): HRESULT {.stdcall.}
-    GetPixelShader*: proc (ppShader: ptr ptr IDirect3DPixelShader9): HRESULT {.stdcall.}
-    SetRenderState*: proc (State: D3DRENDERSTATETYPE, Value: DWORD): HRESULT {.stdcall.}
-    GetRenderState*: proc (State: D3DRENDERSTATETYPE, pValue: ptr DWORD): HRESULT {.stdcall.}
-    GetTextureStageState*: proc (Stage: DWORD, Type: D3DTEXTURESTAGESTATETYPE, pValue: ptr DWORD): HRESULT {.stdcall.}
-    SetTextureStageState*: proc (Stage: DWORD, Type: D3DTEXTURESTAGESTATETYPE, Value: DWORD): HRESULT {.stdcall.}
-    GetSamplerState*: proc (Sampler: DWORD, Type: D3DSAMPLERSTATETYPE, pValue: ptr DWORD): HRESULT {.stdcall.}
-    SetSamplerState*: proc (Sampler: DWORD, Type: D3DSAMPLERSTATETYPE, Value: DWORD): HRESULT {.stdcall.}
-    ValidateDevice*: proc (pNumPasses: ptr DWORD): HRESULT {.stdcall.}
+    Clear*: proc(Count: DWORD, pRects: ptr D3DRECT, Flags: DWORD, Color: DWORD, Z: float, Stencil: DWORD): HRESULT {.stdcall.}
+    BeginScene*: proc(): HRESULT {.stdcall.}
+    EndScene*: proc(): HRESULT {.stdcall.}
+    Present*: proc(pSourceRect: ptr RECTT, pDestRect: ptr RECTT, hDestWindowOverride: HWND, pDirtyRegion: ptr RGNDATA): HRESULT {.stdcall.}
+    Reset*: proc(pPresentationParameters: ptr D3DPRESENT_PARAMETERS): HRESULT {.stdcall.}
+    SetVertexShader*: proc(pShader: ptr IDirect3DVertexShader9): HRESULT {.stdcall.}
+    GetVertexShader*: proc(pShader: ptr ptr IDirect3DVertexShader9): HRESULT {.stdcall.}
+    SetViewport*: proc(pViewport: ptr D3DVIEWPORT9): HRESULT {.stdcall.}
+    SetPixelShader*: proc(pShader: ptr IDirect3DPixelShader9): HRESULT {.stdcall.}
+    GetPixelShader*: proc(ppShader: ptr ptr IDirect3DPixelShader9): HRESULT {.stdcall.}
+    SetRenderState*: proc(State: D3DRENDERSTATETYPE, Value: DWORD): HRESULT {.stdcall.}
+    GetRenderState*: proc(State: D3DRENDERSTATETYPE, pValue: ptr DWORD): HRESULT {.stdcall.}
+    GetTextureStageState*: proc(Stage: DWORD, Type: D3DTEXTURESTAGESTATETYPE, pValue: ptr DWORD): HRESULT {.stdcall.}
+    SetTextureStageState*: proc(Stage: DWORD, Type: D3DTEXTURESTAGESTATETYPE, Value: DWORD): HRESULT {.stdcall.}
+    GetSamplerState*: proc(Sampler: DWORD, Type: D3DSAMPLERSTATETYPE, pValue: ptr DWORD): HRESULT {.stdcall.}
+    SetSamplerState*: proc(Sampler: DWORD, Type: D3DSAMPLERSTATETYPE, Value: DWORD): HRESULT {.stdcall.}
+    ValidateDevice*: proc(pNumPasses: ptr DWORD): HRESULT {.stdcall.}
+
+    CreateVertexBuffer*: proc(Length: UINT, Usage: DWORD, FVF: DWORD, Pool: D3DPOOL, ppVertexBuffer: ptr ptr IDirect3DVertexBuffer9, pSharedHandle: ptr HANDLE): HRESULT {.stdcall.}
+    CreateIndexBuffer*: proc(Length: UINT, Usage: DWORD, Format: D3DFORMAT, Pool: D3DPOOL, ppIndexBuffer: ptr ptr IDirect3DIndexBuffer9, pSharedHandle: ptr HANDLE): HRESULT {.stdcall.}
+
+    CreateStateBlock*: proc(Type: D3DSTATEBLOCKTYPE, ppSB: ptr ptr IDirect3DStateBlock9): HRESULT {.stdcall.}
+    SetStreamSource*: proc(StreamNumber: UINT, pStreamData: ptr IDirect3DVertexBuffer9, OffsetInBytes: UINT, Stride: UINT): HRESULT {.stdcall.}
+    SetFVF*: proc(FVF: DWORD): HRESULT {.stdcall.}
+    SetIndices*: proc(pIndexData: ptr IDirect3DIndexBuffer9): HRESULT {.stdcall.}
+    GetIndices*: proc(ppIndexData: ptr ptr IDirect3DIndexBuffer9): HRESULT {.stdcall.}
+    CreateTexture*: proc(Width: UINT, Height: UINT, Levels: UINT, Usage: DWORD, Format: D3DFORMAT, Pool: D3DPOOL, ppTexture: ptr ptr IDirect3DTexture9, pSharedHandle: ptr HANDLE): HRESULT {.stdcall.}
+
+    SetTransform*: proc(State: D3DTRANSFORMSTATETYPE, pMatrix: ptr D3DMATRIX): HRESULT {.stdcall.}
+    GetTransform*: proc(State: D3DTRANSFORMSTATETYPE, pMatrix: ptr D3DMATRIX): HRESULT {.stdcall.}
 
   LPDIRECT3DDEVICE9* {.importcpp: "LPDIRECT3DDEVICE9", d3d9_header.} = ptr IDirect3DDevice9
   PDIRECT3DDEVICE9* {.importcpp: "PDIRECT3DDEVICE9", d3d9_header.} = ptr IDirect3DDevice9
@@ -965,6 +1075,15 @@ type
   IDirect3DVertexBuffer9* {.importcpp: "IDirect3DVertexBuffer9", d3d9_header, inheritable, pure.} = object
     AddRef*: proc(): ULONG {.stdcall.}
     Release*: proc(): ULONG {.stdcall.}
+
+    GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
+    SetPriority*: proc(PriorityNew: DWORD): DWORD {.stdcall.}
+    GetPriority*: proc(): DWORD {.stdcall.}
+    PreLoad*: proc(): void {.stdcall.}
+    GetType*: proc(): D3DRESOURCETYPE {.stdcall.}
+    Lock*: proc(OffsetToLock: UINT, SizeToLock: UINT, ppbData: ptr pointer, Flags: DWORD): HRESULT {.stdcall.}
+    Unlock*: proc(): HRESULT {.stdcall.}
+    GetDesc*: proc(pDesc: ptr D3DVERTEXBUFFER_DESC): HRESULT {.stdcall.}
   LPDIRECT3DVERTEXBUFFER9* {.importcpp: "LPDIRECT3DVERTEXBUFFER9", d3d9_header.} = ptr IDirect3DVertexBuffer9
   PDIRECT3DVERTEXBUFFER9* {.importcpp: "PDIRECT3DVERTEXBUFFER9", d3d9_header.} = ptr IDirect3DVertexBuffer9
 
@@ -972,6 +1091,15 @@ type
   IDirect3DIndexBuffer9* {.importcpp: "IDirect3DIndexBuffer9", d3d9_header, inheritable, pure.} = object
     AddRef*: proc(): ULONG {.stdcall.}
     Release*: proc(): ULONG {.stdcall.}
+
+    GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
+    SetPriority*: proc(PriorityNew: DWORD): DWORD {.stdcall.}
+    GetPriority*: proc(): DWORD {.stdcall.}
+    PreLoad*: proc(): void {.stdcall.}
+    GetType*: proc(): D3DRESOURCETYPE {.stdcall.}
+    Lock*: proc(OffsetToLock: UINT, SizeToLock: UINT, ppbData: ptr pointer, Flags: DWORD): HRESULT {.stdcall.}
+    Unlock*: proc(): HRESULT {.stdcall.}
+    GetDesc*: proc(pDesc: ptr D3DVERTEXBUFFER_DESC): HRESULT {.stdcall.}
   LPDIRECT3DINDEXBUFFER9* {.importcpp: "LPDIRECT3DINDEXBUFFER9", d3d9_header.} = ptr IDirect3DIndexBuffer9
   PDIRECT3DINDEXBUFFER9* {.importcpp: "PDIRECT3DINDEXBUFFER9", d3d9_header.} = ptr IDirect3DIndexBuffer9
 
@@ -979,6 +1107,22 @@ type
   IDirect3DTexture9* {.importcpp: "IDirect3DTexture9",  d3d9_header, inheritable, pure.} = object
     AddRef*: proc(): ULONG {.stdcall.}
     Release*: proc(): ULONG {.stdcall.}
+
+    SetPriority*: proc(PriorityNew: DWORD): DWORD {.stdcall.}
+    GetPriority*: proc(): DWORD {.stdcall.}
+    PreLoad*: proc(): void {.stdcall.}
+    GetType*: proc(): D3DRESOURCETYPE {.stdcall.}
+    SetLOD*: proc(LODNew: DWORD): DWORD {.stdcall.}
+    GetLOD*: proc(): DWORD {.stdcall.}
+    GetLevelCount*: proc(): DWORD {.stdcall.}
+    SetAutoGenFilterType*: proc(FilterType: D3DTEXTUREFILTERTYPE): HRESULT {.stdcall.}
+    GetAutoGenFilterType*: proc(): D3DTEXTUREFILTERTYPE {.stdcall.}
+    GenerateMipSubLevels*: proc(): void {.stdcall.}
+    GetLevelDesc*: proc(Level: UINT, pDesc: ptr D3DSURFACE_DESC): HRESULT {.stdcall.}
+    GetSurfaceLevel*: proc(Level: UINT, ppSurfaceLevel: ptr ptr IDirect3DSurface9): HRESULT {.stdcall.}
+    LockRect*: proc(Level: UINT, pLockedRect: ptr D3DLOCKED_RECT, pRect: ptr RECTT, Flags: DWORD): HRESULT {.stdcall.}
+    UnlockRect*: proc(Level: UINT): HRESULT {.stdcall.}
+    AddDirtyRect*: proc(pDirtyRect: ptr RECTT): HRESULT {.stdcall.}
   LPDIRECT3DTEXTURE9* {.importcpp: "LPDIRECT3DTEXTURE9", d3d9_header.} = ptr IDirect3DTexture9
   PDIRECT3DTEXTURE9* {.importcpp: "PDIRECT3DTEXTURE9", d3d9_header.} = ptr IDirect3DTexture9 
 
