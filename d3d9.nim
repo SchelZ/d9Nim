@@ -4,18 +4,22 @@ when defined(i368):
   {.passL: "Lib/x86/d3d9.lib".}
 else:
   {.passL: "Lib/x64/d3d9.lib".}
+
 {.pragma: d3d9_header, header: "Include/d3d9.h".}
 {.pragma: d3d9types_header, header: "Include/d3d9types.h".}
 {.pragma: d3d9caps_header, header: "Include/d3d9caps.h".}
-
+{.pragma: d3dx9core_header, header: "Include/d3dx9core.h".}
+{.pragma: d3dx9math_header, header: "Include/d3dx9math.h".}
 
 const 
   D3D_OK* = S_OK
   D3D_SDK_VERSION*: uint = 31
-  D3DADAPTER_DEFAULT*: uint = 0
+  D3DADAPTER_DEFAULT* = 0
   D3DCREATE_SOFTWARE_VERTEXPROCESSING*: DWORD = 0x00000020
   D3DCREATE_HARDWARE_VERTEXPROCESSING*: DWORD = 0x00000040
   D3DCLEAR_TARGET*: DWORD = 0x00000001
+  D3DCLEAR_ZBUFFER*: DWORD = 0x00000002
+  D3DCLEAR_STENCIL*: DWORD =  0x00000004
 
   D3DFVF_RESERVED0* = 0x001
   D3DFVF_POSITION_MASK* = 0x400E
@@ -761,18 +765,18 @@ type
     D3DTEXF_GAUSSIANQUAD    = 7,    # 4-sample gaussian
     D3DTEXF_FORCE_DWORD     = 0x7fffffff   # force 32-bit size enum
 
-  D3DTRANSFORMSTATETYPE* {.importcpp: "enum _D3DTRANSFORMSTATETYPE", d3d9types_header, pure, size: int32.sizeof.} = enum
-    D3DTS_VIEW          = 2,
-    D3DTS_PROJECTION    = 3,
-    D3DTS_TEXTURE0      = 16,
-    D3DTS_TEXTURE1      = 17,
-    D3DTS_TEXTURE2      = 18,
-    D3DTS_TEXTURE3      = 19,
-    D3DTS_TEXTURE4      = 20,
-    D3DTS_TEXTURE5      = 21,
-    D3DTS_TEXTURE6      = 22,
-    D3DTS_TEXTURE7      = 23,
-    D3DTS_FORCE_DWORD    = 0x7fffffff # force 32-bit size enum */
+  # D3DTRANSFORMSTATETYPE* {.importcpp: "enum _D3DTRANSFORMSTATETYPE", d3d9types_header, pure, size: int32.sizeof.} = enum
+  #   D3DTS_VIEW          = 2,
+  #   D3DTS_PROJECTION    = 3,
+  #   D3DTS_TEXTURE0      = 16,
+  #   D3DTS_TEXTURE1      = 17,
+  #   D3DTS_TEXTURE2      = 18,
+  #   D3DTS_TEXTURE3      = 19,
+  #   D3DTS_TEXTURE4      = 20,
+  #   D3DTS_TEXTURE5      = 21,
+  #   D3DTS_TEXTURE6      = 22,
+  #   D3DTS_TEXTURE7      = 23,
+  #   D3DTS_FORCE_DWORD    = 0x7fffffff # force 32-bit size enum */
 
   D3DVERTEXBUFFER_DESC* {.importcpp: "struct _D3DVERTEXBUFFER_DESC", d3d9types_header, pure.} = object
     Format*: D3DFORMAT
@@ -825,13 +829,13 @@ type
     Buffer*: array[1, char]
 
 
-proc D3DTS_WORLDMATRIX(index: int): D3DTRANSFORMSTATETYPE = 
-  return D3DTRANSFORMSTATETYPE(index + 256)
-const
-  D3DTS_WORLD* = D3DTS_WORLDMATRIX(0)
-  D3DTS_WORLD1* = D3DTS_WORLDMATRIX(1)
-  D3DTS_WORLD2* = D3DTS_WORLDMATRIX(2)
-  D3DTS_WORLD3* = D3DTS_WORLDMATRIX(3)  
+# proc D3DTS_WORLDMATRIX(index: int): D3DTRANSFORMSTATETYPE = 
+#   return D3DTRANSFORMSTATETYPE(index + 256)
+# const
+#   D3DTS_WORLD* = D3DTS_WORLDMATRIX(0)
+#   D3DTS_WORLD1* = D3DTS_WORLDMATRIX(1)
+#   D3DTS_WORLD2* = D3DTS_WORLDMATRIX(2)
+#   D3DTS_WORLD3* = D3DTS_WORLDMATRIX(3)  
 
 # d3d9caps.h ------------------------------------------
 const 
@@ -966,23 +970,64 @@ type
 # typedef interface IDirect3DSwapChain9           IDirect3DSwapChain9;
 # typedef interface IDirect3DQuery9               IDirect3DQuery9;
 
+type
+  D3DXVECTOR2* {.importcpp: "struct D3DXVECTOR2", d3dx9math_header, pure.} = object
+    x*, y*: float32
+  LPD3DXVECTOR2* {.importcpp: "LPD3DXVECTOR2",  d3dx9math_header.} = ptr D3DXVECTOR2
+
+proc Vector*(x: float32, y: float32): D3DXVECTOR2 =
+  D3DXVECTOR2(x: x, y: y)
+
 type 
-  IDirect3DSurface9* {.importcpp: "IDirect3DSurface9", d3d9_header, inheritable, pure.} = object
+  IDirect3DResource9* {.importcpp: "IDirect3DResource9", d3d9_header, inheritable, pure.} = object
+    #*** IUnknown methods ***/
+    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
+    AddRef*: proc (): ULONG {.stdcall.}
+    Release*: proc (): ULONG {.stdcall.}
+
+    #*** IDirect3DResource9 methods ***#
+    # GetDevice)(THIS_ IDirect3DDevice9** ppDevice) PURE;
+    # SetPrivateData)(THIS_ REFGUID refguid,CONST void* pData,DWORD SizeOfData,DWORD Flags) PURE;
+    # GetPrivateData)(THIS_ REFGUID refguid,void* pData,DWORD* pSizeOfData) PURE;
+    # FreePrivateData)(THIS_ REFGUID refguid) PURE;
+    # DWORD, SetPriority)(THIS_ DWORD PriorityNew) PURE;
+    # DWORD, GetPriority)(THIS) PURE;
+    # void, PreLoad)(THIS) PURE;
+    # D3DRESOURCETYPE, GetType)(THIS) PURE;
+
+  IDirect3DSurface9* {.importcpp: "IDirect3DSurface9", d3d9_header, inheritable, pure.} = object of IDirect3DResource9
   LPDIRECT3DSURFACE9* {.importcpp: "LPDIRECT3DSURFACE9",  d3d9_header.} = ptr IDirect3DSurface9
   PDIRECT3DSURFACE9* {.importcpp: "PDIRECT3DSURFACE9",  d3d9_header.} = ptr IDirect3DSurface9
 
-  #---------------------------------------------------------------------
   IDirect3D9* {.importcpp: "IDirect3D9",  d3d9_header, inheritable, pure.} = object
+    #*** IUnknown methods ***/
+    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
+    AddRef*: proc (): ULONG {.stdcall.}
     Release*: proc (): ULONG {.stdcall.}
-    CreateDevice*: proc (Adapter: uint, DeviceType: D3DDEVTYPE, hFocusWindow: HWND, BehaviorFlags: DWORD, pPresentationParameters: ptr D3DPRESENT_PARAMETERS, ppReturnedDeviceInterface: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
+
+    #*** IDirect3D9 methods ***/
+    RegisterSoftwareDevice*: proc (pInitializeFunction: pointer): HRESULT {.stdcall.}
+    GetAdapterCount*: proc (): UINT {.stdcall.}
+    # STDMETHOD(GetAdapterIdentifier)(THIS_ UINT Adapter,DWORD Flags,D3DADAPTER_IDENTIFIER9* pIdentifier) PURE;
+    # STDMETHOD_(UINT, GetAdapterModeCount)(THIS_ UINT Adapter,D3DFORMAT Format) PURE;
+    # STDMETHOD(EnumAdapterModes)(THIS_ UINT Adapter,D3DFORMAT Format,UINT Mode,D3DDISPLAYMODE* pMode) PURE;
+    # STDMETHOD(GetAdapterDisplayMode)(THIS_ UINT Adapter,D3DDISPLAYMODE* pMode) PURE;
+    # STDMETHOD(CheckDeviceType)(THIS_ UINT iAdapter,D3DDEVTYPE DevType,D3DFORMAT DisplayFormat,D3DFORMAT BackBufferFormat,BOOL bWindowed) PURE;
+    # STDMETHOD(CheckDeviceFormat)(THIS_ UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT AdapterFormat,DWORD Usage,D3DRESOURCETYPE RType,D3DFORMAT CheckFormat) PURE;
+    CheckDeviceMultiSampleType*: proc (Adapter: UINT, DeviceType: D3DDEVTYPE, SurfaceFormat: D3DFORMAT, Windowed: BOOL, MultiSampleType: D3DMULTISAMPLE_TYPE, pQualityLevels: ptr DWORD): HRESULT {.stdcall.}
+    CheckDepthStencilMatch*: proc (Adapter: UINT, DeviceType: D3DDEVTYPE, AdapterFormat: D3DFORMAT, RenderTargetFormat: D3DFORMAT, DepthStencilFormat: D3DFORMAT): HRESULT {.stdcall.}
+    CheckDeviceFormatConversion*: proc (Adapter: UINT, DeviceType: D3DDEVTYPE, SourceFormat: D3DFORMAT, TargetFormat: D3DFORMAT): HRESULT {.stdcall.}
+    GetDeviceCaps*: proc (Adapter: UINT, DeviceType: D3DDEVTYPE, pCaps: ptr D3DCAPS9): HRESULT {.stdcall.}
+    GetAdapterMonitor*: proc (Adapter: UINT): HMONITOR {.stdcall.}
+    CreateDevice*: proc (Adapter: UINT, DeviceType: D3DDEVTYPE, hFocusWindow: HWND, BehaviorFlags: DWORD, pPresentationParameters: ptr D3DPRESENT_PARAMETERS, ppReturnedDeviceInterface: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
   LPDIRECT3D9* {.importcpp: "LPDIRECT3D9",  d3d9_header.} = ptr IDirect3D9
   PDIRECT3D9* {.importcpp: "PDIRECT3D9",  d3d9_header.} = ptr IDirect3D9
 
-  #---------------------------------------------------------------------
   IDirect3DDevice9* {.importcpp: "IDirect3DDevice9", d3d9_header, inheritable, pure.} = object
-    # IUnknown methods ***/
-    AddRef*: proc(): ULONG  {.stdcall.}
-    Release*: proc (): ULONG  {.stdcall.}
+    #*** IUnknown methods ***/
+    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
+    AddRef*: proc (): ULONG {.stdcall.}
+    Release*: proc (): ULONG {.stdcall.}
 
     # IDirect3DDevice9 methods ***/
     TestCooperativeLevel*: proc(): HRESULT {.stdcall.}
@@ -1012,10 +1057,8 @@ type
     GetSamplerState*: proc(Sampler: DWORD, Type: D3DSAMPLERSTATETYPE, pValue: ptr DWORD): HRESULT {.stdcall.}
     SetSamplerState*: proc(Sampler: DWORD, Type: D3DSAMPLERSTATETYPE, Value: DWORD): HRESULT {.stdcall.}
     ValidateDevice*: proc(pNumPasses: ptr DWORD): HRESULT {.stdcall.}
-
     CreateVertexBuffer*: proc(Length: UINT, Usage: DWORD, FVF: DWORD, Pool: D3DPOOL, ppVertexBuffer: ptr ptr IDirect3DVertexBuffer9, pSharedHandle: ptr HANDLE): HRESULT {.stdcall.}
     CreateIndexBuffer*: proc(Length: UINT, Usage: DWORD, Format: D3DFORMAT, Pool: D3DPOOL, ppIndexBuffer: ptr ptr IDirect3DIndexBuffer9, pSharedHandle: ptr HANDLE): HRESULT {.stdcall.}
-
     CreateStateBlock*: proc(Type: D3DSTATEBLOCKTYPE, ppSB: ptr ptr IDirect3DStateBlock9): HRESULT {.stdcall.}
     SetStreamSource*: proc(StreamNumber: UINT, pStreamData: ptr IDirect3DVertexBuffer9, OffsetInBytes: UINT, Stride: UINT): HRESULT {.stdcall.}
     SetFVF*: proc(FVF: DWORD): HRESULT {.stdcall.}
@@ -1023,16 +1066,16 @@ type
     GetIndices*: proc(ppIndexData: ptr ptr IDirect3DIndexBuffer9): HRESULT {.stdcall.}
     CreateTexture*: proc(Width: UINT, Height: UINT, Levels: UINT, Usage: DWORD, Format: D3DFORMAT, Pool: D3DPOOL, ppTexture: ptr ptr IDirect3DTexture9, pSharedHandle: ptr HANDLE): HRESULT {.stdcall.}
 
-    SetTransform*: proc(State: D3DTRANSFORMSTATETYPE, pMatrix: ptr D3DMATRIX): HRESULT {.stdcall.}
-    GetTransform*: proc(State: D3DTRANSFORMSTATETYPE, pMatrix: ptr D3DMATRIX): HRESULT {.stdcall.}
-
+    # SetTransform*: proc(State: D3DTRANSFORMSTATETYPE, pMatrix: ptr D3DMATRIX): HRESULT {.stdcall.}
+    # GetTransform*: proc(State: D3DTRANSFORMSTATETYPE, pMatrix: ptr D3DMATRIX): HRESULT {.stdcall.}
   LPDIRECT3DDEVICE9* {.importcpp: "LPDIRECT3DDEVICE9", d3d9_header.} = ptr IDirect3DDevice9
   PDIRECT3DDEVICE9* {.importcpp: "PDIRECT3DDEVICE9", d3d9_header.} = ptr IDirect3DDevice9
 
-  #---------------------------------------------------------------------
   IDirect3DStateBlock9* {.importcpp: "IDirect3DStateBlock9",  d3d9_header, inheritable, pure.} = object
-    AddRef*: proc(): ULONG {.stdcall.}
-    Release*: proc(): ULONG {.stdcall.}
+    #*** IUnknown methods ***/
+    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
+    AddRef*: proc (): ULONG {.stdcall.}
+    Release*: proc (): ULONG {.stdcall.}
 
     #*** IDirect3DStateBlock9 methods ***#
     GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
@@ -1041,30 +1084,33 @@ type
   LPDIRECT3DSTATEBLOCK9* {.importcpp: "LPDIRECT3DSTATEBLOCK9",  d3d9_header.} = ptr IDirect3DStateBlock9
   PDIRECT3DSTATEBLOCK9* {.importcpp: "PDIRECT3DSTATEBLOCK9",  d3d9_header.} = ptr IDirect3DStateBlock9
 
-  #---------------------------------------------------------------------
   IDirect3DVertexDeclaration9* {.importcpp: "IDirect3DVertexDeclaration9",  d3d9_header, inheritable, pure.} = object
-    AddRef*: proc(): ULONG {.stdcall.}
-    Release*: proc(): ULONG {.stdcall.}
+    #*** IUnknown methods ***/
+    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
+    AddRef*: proc (): ULONG {.stdcall.}
+    Release*: proc (): ULONG {.stdcall.}
 
     #*** IDirect3DVertexDeclaration9 methods ***#
     GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
   LPDIRECT3DVERTEXDECLARATION9* {.importcpp: "LPDIRECT3DVERTEXDECLARATION9",  d3d9_header.} = ptr IDirect3DVertexDeclaration9
   PDIRECT3DVERTEXDECLARATION9* {.importcpp: "PDIRECT3DVERTEXDECLARATION9",  d3d9_header.} = ptr IDirect3DVertexDeclaration9
 
-  #---------------------------------------------------------------------
   IDirect3DVertexShader9* {.importcpp: "IDirect3DVertexShader9",  d3d9_header, inheritable, pure.} = object
-    AddRef*: proc(): ULONG {.stdcall.}
-    Release*: proc(): ULONG {.stdcall.}
+    #*** IUnknown methods ***/
+    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
+    AddRef*: proc (): ULONG {.stdcall.}
+    Release*: proc (): ULONG {.stdcall.}
 
     #*** IDirect3DVertexShader9 methods ***#
     GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
   LPDIRECT3DVERTEXSHADER9* {.importcpp: "LPDIRECT3DVERTEXSHADER9",  d3d9_header.} = ptr IDirect3DVertexShader9
   PDIRECT3DVERTEXSHADER9* {.importcpp: "PDIRECT3DVERTEXSHADER9",  d3d9_header.} = ptr IDirect3DVertexShader9
 
-  #---------------------------------------------------------------------
   IDirect3DPixelShader9* {.importcpp: "IDirect3DPixelShader9", d3d9_header, inheritable, pure.} = object
-    AddRef*: proc(): ULONG {.stdcall.}
-    Release*: proc(): ULONG {.stdcall.}
+    #*** IUnknown methods ***/
+    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
+    AddRef*: proc (): ULONG {.stdcall.}
+    Release*: proc (): ULONG {.stdcall.}
 
     #*** IDirect3DPixelShader9 methods ***#
     GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
@@ -1073,9 +1119,12 @@ type
 
 
   IDirect3DVertexBuffer9* {.importcpp: "IDirect3DVertexBuffer9", d3d9_header, inheritable, pure.} = object
-    AddRef*: proc(): ULONG {.stdcall.}
-    Release*: proc(): ULONG {.stdcall.}
+    #*** IUnknown methods ***/
+    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
+    AddRef*: proc (): ULONG {.stdcall.}
+    Release*: proc (): ULONG {.stdcall.}
 
+    #*** IDirect3DVertexBuffer9 methods ***/
     GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
     SetPriority*: proc(PriorityNew: DWORD): DWORD {.stdcall.}
     GetPriority*: proc(): DWORD {.stdcall.}
@@ -1089,9 +1138,12 @@ type
 
 
   IDirect3DIndexBuffer9* {.importcpp: "IDirect3DIndexBuffer9", d3d9_header, inheritable, pure.} = object
-    AddRef*: proc(): ULONG {.stdcall.}
-    Release*: proc(): ULONG {.stdcall.}
+    #*** IUnknown methods ***/
+    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
+    AddRef*: proc (): ULONG {.stdcall.}
+    Release*: proc (): ULONG {.stdcall.}
 
+    #*** IDirect3DIndexBuffer9 methods ***/
     GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
     SetPriority*: proc(PriorityNew: DWORD): DWORD {.stdcall.}
     GetPriority*: proc(): DWORD {.stdcall.}
@@ -1103,11 +1155,14 @@ type
   LPDIRECT3DINDEXBUFFER9* {.importcpp: "LPDIRECT3DINDEXBUFFER9", d3d9_header.} = ptr IDirect3DIndexBuffer9
   PDIRECT3DINDEXBUFFER9* {.importcpp: "PDIRECT3DINDEXBUFFER9", d3d9_header.} = ptr IDirect3DIndexBuffer9
 
+  IDirect3DBaseTexture9* {.importcpp: "IDirect3DBaseTexture9",  d3d9_header, inheritable, pure.} = object
+  IDirect3DTexture9* {.importcpp: "IDirect3DTexture9",  d3d9_header, inheritable, pure.} = object of IDirect3DBaseTexture9
+    #*** IUnknown methods ***/
+    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
+    AddRef*: proc (): ULONG {.stdcall.}
+    Release*: proc (): ULONG {.stdcall.}
 
-  IDirect3DTexture9* {.importcpp: "IDirect3DTexture9",  d3d9_header, inheritable, pure.} = object
-    AddRef*: proc(): ULONG {.stdcall.}
-    Release*: proc(): ULONG {.stdcall.}
-
+    #*** IDirect3DTexture9 methods ***/
     SetPriority*: proc(PriorityNew: DWORD): DWORD {.stdcall.}
     GetPriority*: proc(): DWORD {.stdcall.}
     PreLoad*: proc(): void {.stdcall.}
@@ -1126,10 +1181,32 @@ type
   LPDIRECT3DTEXTURE9* {.importcpp: "LPDIRECT3DTEXTURE9", d3d9_header.} = ptr IDirect3DTexture9
   PDIRECT3DTEXTURE9* {.importcpp: "PDIRECT3DTEXTURE9", d3d9_header.} = ptr IDirect3DTexture9 
 
-func Direct3DCreate9*(SDKVersion: uint): ptr IDirect3D9 {.importcpp: "Direct3DCreate9(@)", d3d9_header, stdcall.}
+  ID3DXLine* {.importcpp: "ID3DXLine",  d3dx9core_header, inheritable, pure.} = object
+    GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
+    Begin*: proc(): HRESULT {.stdcall.}
+    Draw*: proc(pVertexList: ptr D3DXVECTOR2, dwVertexListCount: DWORD, color: DWORD): HRESULT {.stdcall.}
+    SetPattern*: proc(dwPattern: DWORD): HRESULT {.stdcall.}
+    GetPattern*: proc(): DWORD {.stdcall.}
+    SetPatternScale*: proc(fPatternScale: float): HRESULT {.stdcall.}
+    GetPatternScale*: proc(): float {.stdcall.}
+    SetWidth*: proc(fWidth: float): HRESULT {.stdcall.}
+    GetWidth*: proc(): float {.stdcall.}
+    SetAntialias*: proc(bAntialias: bool): HRESULT {.stdcall.}
+    GetAntialias*: proc(): bool {.stdcall.}
+    SetGLLines: proc(bGLLines: bool): HRESULT {.stdcall.}
+    GetGLLines*: proc(): bool {.stdcall.}
+    End*: proc(): HRESULT {.stdcall.}
+    OnLostDevice*: proc(): HRESULT {.stdcall.}
+    OnResetDevice*: proc(): HRESULT {.stdcall.}
+  LPD3DXLINE* {.importcpp: "LPD3DXLINE", d3dx9core_header.} = ptr ID3DXLine
 
+proc D3DXCreateLine*(pDevice: LPDIRECT3DDEVICE9, ppLine: ptr LPD3DXLINE): HRESULT {.importcpp: "D3DXCreateLine(@, @)",  d3dx9core_header, stdcall.}
+
+func Direct3DCreate9*(SDKVersion: uint): ptr IDirect3D9 {.importcpp: "Direct3DCreate9(@)", d3d9_header, stdcall.}
 func D3DCOLOR_ARGB*(a: int, r: int, g: int, b: int): DWORD = 
   return (cast[DWORD](((((a) and 0xff) shl 24) or (((r) and 0xff) shl 16) or (((g) and 0xff) shl 8) or ((b) and 0xff))))
 
-func D3DCOLOR_XRGB*(r: int, g: int, b: int): DWORD = 
-  return D3DCOLOR_ARGB(0xff,r,g,b) 
+func D3DCOLOR_RGBA*(r: int, g: int, b: int, a: int): DWORD = D3DCOLOR_ARGB(a, r, g, b)
+func D3DCOLOR_XRGB*(r: int, g: int, b: int): DWORD = D3DCOLOR_ARGB(0xff, r, g, b) 
+func D3DCOLOR_XYUV*(y: int, u: int, v: int): DWORD = D3DCOLOR_ARGB(0xff, y, u, v)
+func D3DCOLOR_AYUV*(a: int, y: int, u: int, v: int): DWORD = D3DCOLOR_ARGB(a, y, u, v)
