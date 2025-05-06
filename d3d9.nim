@@ -15,7 +15,10 @@ const pathFile =  getEnv("DXSDK_DIR")
 
 {.pragma: d3d9_header, header: pathFile & "Include\\d3d9.h".}
 {.pragma: d3d9types_header, header: pathFile & "Include\\d3d9types.h".}
-{.pragma: d3d9caps_header, header: pathFile & "Include\\d3d9caps.h".}
+{.pragma: d3d9caps_header, header: pathFile & "Include\\d3d9caps_header.h".}
+{.pragma: d3dx9math_header, header: pathFile & "Include\\d3dx9math_header.h".}
+{.pragma: d3dx9core_header, header: pathFile & "Include\\d3dx9core_header.h".}
+
 
 const 
   D3D_OK* = S_OK
@@ -523,7 +526,7 @@ type
     MultiSampleQuality*: DWORD
 
     SwapEffect*: D3DSWAPEFFECT
-    hDeviceWindow*: HWND
+    hDeviceWindow*: pointer
     Windowed*: bool
     EnableAutoDepthStencil*: bool
     AutoDepthStencilFormat*: D3DFORMAT
@@ -1025,7 +1028,7 @@ type
     CheckDeviceFormatConversion*: proc (Adapter: UINT, DeviceType: D3DDEVTYPE, SourceFormat: D3DFORMAT, TargetFormat: D3DFORMAT): HRESULT {.stdcall.}
     GetDeviceCaps*: proc (Adapter: UINT, DeviceType: D3DDEVTYPE, pCaps: ptr D3DCAPS9): HRESULT {.stdcall.}
     GetAdapterMonitor*: proc (Adapter: UINT): HMONITOR {.stdcall.}
-    CreateDevice*: proc (Adapter: UINT, DeviceType: D3DDEVTYPE, hFocusWindow: HWND, BehaviorFlags: DWORD, pPresentationParameters: ptr D3DPRESENT_PARAMETERS, ppReturnedDeviceInterface: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
+    CreateDevice*: proc (Adapter: UINT, DeviceType: D3DDEVTYPE, hFocusWindow: pointer, BehaviorFlags: DWORD, pPresentationParameters: ptr D3DPRESENT_PARAMETERS, ppReturnedDeviceInterface: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
   LPDIRECT3D9* {.importcpp: "LPDIRECT3D9",  d3d9_header.} = ptr IDirect3D9
   PDIRECT3D9* {.importcpp: "PDIRECT3D9",  d3d9_header.} = ptr IDirect3D9
 
