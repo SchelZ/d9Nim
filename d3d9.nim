@@ -1,15 +1,21 @@
-import winim/com
+import winim/com, os, strutils
 
-when defined(i368):
-  {.passL: "Lib/x86/d3d9.lib".}
+if existsEnv("DXSDK_DIR"):
+    echo getEnv("DXSDK_DIR")
 else:
-  {.passL: "Lib/x64/d3d9.lib".}
+    echo "Please add DirectX SDK to environment path"
 
-{.pragma: d3d9_header, header: "Include/d3d9.h".}
-{.pragma: d3d9types_header, header: "Include/d3d9types.h".}
-{.pragma: d3d9caps_header, header: "Include/d3d9caps.h".}
-{.pragma: d3dx9core_header, header: "Include/d3dx9core.h".}
-{.pragma: d3dx9math_header, header: "Include/d3dx9math.h".}
+proc getDirectXDir: string {.compileTime.} = 
+  result = getEnv("DXSDK_DIR").replace("\\", "/")
+
+const path = "\"" & getDirectXDir() & "/Lib/x64/d3d9.lib\""
+
+{.passL: path.}
+const pathFile =  getEnv("DXSDK_DIR")
+
+{.pragma: d3d9_header, header: pathFile & "Include\\d3d9.h".}
+{.pragma: d3d9types_header, header: pathFile & "Include\\d3d9types.h".}
+{.pragma: d3d9caps_header, header: pathFile & "Include\\d3d9caps.h".}
 
 const 
   D3D_OK* = S_OK
