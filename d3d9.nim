@@ -6,12 +6,13 @@ if not existsEnv("DXSDK_DIR"):
 proc getDirectXDir: string {.compileTime.} = 
   result = getEnv("DXSDK_DIR").replace("\\", "/")
 
+const path = "\"" & getDirectXDir()
 when defined(i368):
-  const path = "\"" & getDirectXDir() & "/Lib/x86/d3d9.lib\""
-  {.passL: path.}
+  {.passL: path & "/Lib/x86/d3d9.lib\"".}
+  {.passL: path & "/Lib/x86/d3dx9.lib\"".}
 else:
-  const path = "\"" & getDirectXDir() & "/Lib/x64/d3d9.lib\""
-  {.passL: path.}
+  {.passL: path & "/Lib/x64/d3d9.lib\"".}
+  {.passL: path & "/Lib/x64/d3dx9.lib\"".}
 
 const pathFile = getEnv("DXSDK_DIR") & "Include\\"
 {.pragma: d3d9_header, header: pathFile & "d3d9.h".}
