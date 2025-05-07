@@ -1185,7 +1185,7 @@ type
     GenerateMipSubLevels*: proc(): void {.stdcall.}
     GetLevelDesc*: proc(Level: UINT, pDesc: ptr D3DSURFACE_DESC): HRESULT {.stdcall.}
     GetSurfaceLevel*: proc(Level: UINT, ppSurfaceLevel: ptr ptr IDirect3DSurface9): HRESULT {.stdcall.}
-    LockRect*: proc(Level: UINT, pLockedRect: ptr D3DLOCKED_RECT, pRect: ptr RECTT, Flags: DWORD): HRESULT {.stdcall.}
+    LockRect*: proc(Level: UINT, pLockedRect: ptr D3DLOCKED_RECT, pRect: pointer, Flags: DWORD): HRESULT {.stdcall.}
     UnlockRect*: proc(Level: UINT): HRESULT {.stdcall.}
     AddDirtyRect*: proc(pDirtyRect: ptr RECTT): HRESULT {.stdcall.}
   LPDIRECT3DTEXTURE9* {.importcpp: "LPDIRECT3DTEXTURE9", d3d9_header.} = ptr IDirect3DTexture9
@@ -1210,11 +1210,31 @@ type
     OnResetDevice*: proc(): HRESULT {.stdcall.}
   LPD3DXLINE* {.importcpp: "LPD3DXLINE", d3dx9core_header.} = ptr ID3DXLine
 
-proc D3DXCreateLine*(pDevice: LPDIRECT3DDEVICE9, ppLine: ptr LPD3DXLINE): HRESULT {.importcpp: "D3DXCreateLine(@, @)",  d3dx9core_header, stdcall.}
+  ID3DXSprite* {.importcpp: "ID3DXSprite",  d3dx9core_header, inheritable, pure.} = object
+    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
+    AddRef*: proc (): ULONG {.stdcall.}
+    Release*: proc (): ULONG {.stdcall.}
+    Begin*: proc(): HRESULT {.stdcall.}
+    # STDMETHOD(Draw)(THIS_ LPDIRECT3DTEXTURE9 pTexture, CONST RECT *pSrcRect, CONST D3DXVECTOR3 *pCenter, CONST D3DXVECTOR3 *pPosition, D3DCOLOR Color) PURE;
+    Flush*: proc(): HRESULT {.stdcall.}
+    End*: proc(): HRESULT {.stdcall.}
+    OnLostDevice*: proc(): int32 {.stdcall.}
+    OnResetDevice*: proc(): int32 {.stdcall.}
+  LPD3DXSPRITE* {.importcpp: "LPD3DXSPRITE", d3dx9core_header.} = ptr ID3DXSprite
 
+  ID3DXFont* {.importcpp: "ID3DXFont",  d3dx9core_header, inheritable, pure.} = object
+    GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): int32 {.stdcall.}
+    DrawTextW*: proc (pSprite: LPD3DXSPRITE, pString: LPCWSTR, count: int32, pRect: pointer, Format: uint, color: int32): int32 {.stdcall.}
+
+    OnLostDevice*: proc(): int32 {.stdcall.}
+    OnResetDevice*: proc(): int32 {.stdcall.}
+  LPD3DXFONT* {.importcpp: "LPD3DXFONT", d3dx9core_header.} = ptr ID3DXFont
+
+proc D3DXCreateLine*(pDevice: LPDIRECT3DDEVICE9, ppLine: ptr LPD3DXLINE): HRESULT {.importcpp: "D3DXCreateLine(@, @)",  d3dx9core_header, stdcall, discardable.}
+proc D3DXCreateFont*(pDevice: LPDIRECT3DDEVICE9, height: int, width: uint, weight: uint, mipLevel: uint, intalic: bool, charset: DWORD, outputPrecision: DWORD, quality: DWORD, pitchAndFamily: DWORD, pFaceName: LPCWSTR, ppFont: ptr LPD3DXFONT): HRESULT {.importcpp: "D3DXCreateFontW(@)", d3dx9core_header, stdcall, discardable.}
 func Direct3DCreate9*(SDKVersion: uint): ptr IDirect3D9 {.importcpp: "Direct3DCreate9(@)", d3d9_header, stdcall.}
 func D3DCOLOR_ARGB*(a: int, r: int, g: int, b: int): DWORD = 
-  return (cast[DWORD](((((a) and 0xff) shl 24) or (((r) and 0xff) shl 16) or (((g) and 0xff) shl 8) or ((b) and 0xff))))
+  return (cast[int32](((((a) and 0xff) shl 24) or (((r) and 0xff) shl 16) or (((g) and 0xff) shl 8) or ((b) and 0xff))))
 
 func D3DCOLOR_RGBA*(r: int, g: int, b: int, a: int): DWORD = D3DCOLOR_ARGB(a, r, g, b)
 func D3DCOLOR_XRGB*(r: int, g: int, b: int): DWORD = D3DCOLOR_ARGB(0xff, r, g, b) 
