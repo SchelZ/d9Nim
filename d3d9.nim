@@ -1223,6 +1223,9 @@ type
   LPD3DXSPRITE* {.importcpp: "LPD3DXSPRITE", d3dx9core_header.} = ptr ID3DXSprite
 
   ID3DXFont* {.importcpp: "ID3DXFont",  d3dx9core_header, inheritable, pure.} = object
+    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
+    AddRef*: proc (): ULONG {.stdcall.}
+    Release*: proc (): ULONG {.stdcall.}
     GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): int32 {.stdcall.}
     DrawTextW*: proc (pSprite: LPD3DXSPRITE, pString: LPCWSTR, count: int32, pRect: pointer, Format: uint, color: int32): int32 {.stdcall.}
 
