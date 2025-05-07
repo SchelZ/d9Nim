@@ -1,23 +1,24 @@
 import winim/com, os, strutils
 
-if existsEnv("DXSDK_DIR"):
-    echo getEnv("DXSDK_DIR")
-else:
-    echo "Please add DirectX SDK to environment path"
+if not existsEnv("DXSDK_DIR"):
+  raise newException(CatchableError, "Please add DirectX SDK to environment path")
 
 proc getDirectXDir: string {.compileTime.} = 
   result = getEnv("DXSDK_DIR").replace("\\", "/")
 
-const path = "\"" & getDirectXDir() & "/Lib/x64/d3d9.lib\""
+when defined(i368):
+  const path = "\"" & getDirectXDir() & "/Lib/x86/d3d9.lib\""
+  {.passL: path.}
+else:
+  const path = "\"" & getDirectXDir() & "/Lib/x64/d3d9.lib\""
+  {.passL: path.}
 
-{.passL: path.}
-const pathFile =  getEnv("DXSDK_DIR")
-
-{.pragma: d3d9_header, header: pathFile & "Include\\d3d9.h".}
-{.pragma: d3d9types_header, header: pathFile & "Include\\d3d9types.h".}
-{.pragma: d3d9caps_header, header: pathFile & "Include\\d3d9caps_header.h".}
-{.pragma: d3dx9math_header, header: pathFile & "Include\\d3dx9math_header.h".}
-{.pragma: d3dx9core_header, header: pathFile & "Include\\d3dx9core_header.h".}
+const pathFile = getEnv("DXSDK_DIR") & "Include\\"
+{.pragma: d3d9_header, header: pathFile & "d3d9.h".}
+{.pragma: d3d9types_header, header: pathFile & "d3d9types.h".}
+{.pragma: d3d9caps_header, header: pathFile & "d3d9caps_header.h".}
+{.pragma: d3dx9math_header, header: pathFile & "d3dx9math_header.h".}
+{.pragma: d3dx9core_header, header: pathFile & "d3dx9core_header.h".}
 
 
 const 
