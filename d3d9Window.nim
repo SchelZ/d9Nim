@@ -4,6 +4,7 @@ var
   d3d: LPDIRECT3D9
   d3ddev: LPDIRECT3DDEVICE9
   d3dpp: D3DPRESENT_PARAMETERS
+  d3dFont: LPD3DXFONT
 
 proc initD3D(hWnd: pointer): void = 
   d3d = Direct3DCreate9(D3D_SDK_VERSION) 
@@ -16,15 +17,21 @@ proc initD3D(hWnd: pointer): void =
   d3dpp.EnableAutoDepthStencil = true
   d3dpp.AutoDepthStencilFormat = D3DFMT_D16
   discard d3d.CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, D3DCREATE_SOFTWARE_VERTEXPROCESSING, d3dpp.addr, d3ddev.addr)
+  D3DXCreateFont(d3ddev, 40, 0, FW_BOLD, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH or FF_DONTCARE, "Arial", d3dFont.addr);
 
 proc render_frame(): void =
   discard d3ddev.Clear(0, nil, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 40, 100), 1.0, 0)
   discard d3ddev.BeginScene()
-  # echo cast[int](d3ddev)
+
+  var r: RECT
+  SetRect(addr r, 100, 100, 0, 0)
+  discard d3dFont.DrawTextW(nil, "Directx9 from nim!", -1, r.addr, DT_NOCLIP, D3DCOLOR_XRGB(255, 255, 0))
+
   discard d3ddev.EndScene()
   discard d3ddev.Present(nil, nil, nil, nil)
 
 proc cleanD3D(): void =
+  discard d3dFont.Release()
   discard d3ddev.Release()   
   discard d3d.Release()  
 
