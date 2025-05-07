@@ -16,9 +16,9 @@ else:
 const pathFile = getEnv("DXSDK_DIR") & "Include\\"
 {.pragma: d3d9_header, header: pathFile & "d3d9.h".}
 {.pragma: d3d9types_header, header: pathFile & "d3d9types.h".}
-{.pragma: d3d9caps_header, header: pathFile & "d3d9caps_header.h".}
-{.pragma: d3dx9math_header, header: pathFile & "d3dx9math_header.h".}
-{.pragma: d3dx9core_header, header: pathFile & "d3dx9core_header.h".}
+{.pragma: d3d9caps_header, header: pathFile & "d3d9caps.h".}
+{.pragma: d3dx9math_header, header: pathFile & "d3dx9math.h".}
+{.pragma: d3dx9core_header, header: pathFile & "d3dx9core.h".}
 
 
 const 
