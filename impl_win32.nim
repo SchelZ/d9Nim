@@ -1,3 +1,5 @@
+# This is not fully working, still fixing some errors with directx9
+
 import winim/com, imgui
 
 var 
