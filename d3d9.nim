@@ -1,4 +1,5 @@
-import  os, strutils
+import os, strutils
+
 
 if not existsEnv("DXSDK_DIR"):
   raise newException(CatchableError, "Please add DirectX SDK to environment path")
@@ -205,13 +206,13 @@ type
     D3DSHADE_FLAT               = 1,
     D3DSHADE_GOURAUD            = 2,
     D3DSHADE_PHONG              = 3,
-    D3DSHADE_FORCE_int32        = 0x7fffffff # force 32-bit size enum */
+    D3DSHADE_FORCE_DWORD        = 0x7fffffff # force 32-bit size enum */
 
   D3DFILLMODE* {.importcpp: "enum _D3DFILLMODE", d3d9types_header, pure, size: int32.sizeof.} = enum
     D3DFILL_POINT               = 1,
     D3DFILL_WIREFRAME           = 2,
     D3DFILL_SOLID               = 3,
-    D3DFILL_FORCE_int32         = 0x7fffffff # force 32-bit size enum */
+    D3DFILL_FORCE_DWORD         = 0x7fffffff # force 32-bit size enum */
 
   D3DBLEND* {.importcpp: "enum _D3DBLEND", d3d9types_header, pure, size: int32.sizeof.} = enum
     D3DBLEND_ZERO               = 1,
@@ -229,7 +230,7 @@ type
     D3DBLEND_BOTHINVSRCALPHA    = 13,
     D3DBLEND_BLENDFACTOR        = 14, # Only supported if D3DPBLENDCAPS_BLENDFACTOR is on */
     D3DBLEND_INVBLENDFACTOR     = 15, # Only supported if D3DPBLENDCAPS_BLENDFACTOR is on */
-    D3DBLEND_FORCE_int32        = 0x7fffffff # force 32-bit size enum */
+    D3DBLEND_FORCE_DWORD        = 0x7fffffff # force 32-bit size enum */
 
   D3DBLENDOP* {.importcpp: "enum _D3DBLENDOP", d3d9types_header, pure, size: int32.sizeof.} = enum
     D3DBLENDOP_ADD              = 1,
@@ -237,7 +238,7 @@ type
     D3DBLENDOP_REVSUBTRACT      = 3,
     D3DBLENDOP_MIN              = 4,
     D3DBLENDOP_MAX              = 5,
-    D3DBLENDOP_FORCE_int32      = 0x7fffffff # force 32-bit size enum */
+    D3DBLENDOP_FORCE_DWORD      = 0x7fffffff # force 32-bit size enum */
 
   D3DTEXTUREADDRESS* {.importcpp: "enum _D3DTEXTUREADDRESS", d3d9types_header, pure, size: int32.sizeof.} = enum
       D3DTADDRESS_WRAP            = 1,
@@ -245,13 +246,13 @@ type
       D3DTADDRESS_CLAMP           = 3,
       D3DTADDRESS_BORDER          = 4,
       D3DTADDRESS_MIRRORONCE      = 5,
-      D3DTADDRESS_FORCE_int32     = 0x7fffffff # force 32-bit size enum */
+      D3DTADDRESS_FORCE_DWORD     = 0x7fffffff # force 32-bit size enum */
 
   D3DCULL* {.importcpp: "enum _D3DCULL", d3d9types_header, pure, size: int32.sizeof.} = enum
     D3DCULL_NONE                = 1,
     D3DCULL_CW                  = 2,
     D3DCULL_CWW                 = 3,
-    D3DCULL_FORCE_int32         = 0x7fffffff
+    D3DCULL_FORCE_DWORD         = 0x7fffffff
 
   D3DLOCKED_RECT* {.importcpp: "struct _D3DLOCKED_RECT", d3d9types_header, pure.} = object
     Pitch*: int
@@ -290,7 +291,7 @@ type
     D3DSPR_MISCTYPE       = 17, # Miscellaneous (single) registers.
     D3DSPR_LABEL          = 18, # Label
     D3DSPR_PREDICATE      = 19, # Predicate register
-    D3DSPR_FORCE_int32  = 0x7fffffff,         # force 32-bit size enum
+    D3DSPR_FORCE_DWORD  = 0x7fffffff,         # force 32-bit size enum
 
   D3DSHADER_MISCTYPE_OFFSETS* {.importcpp: "enum _D3DSHADER_MISCTYPE_OFFSETS", d3d9types_header, pure.} = enum
     D3DSMO_POSITION = 0, # Input position x,y,z,rhw (PS)
@@ -302,7 +303,7 @@ type
     D3DSRO_POSITION = 0,
     D3DSRO_FOG,
     D3DSRO_POINT_SIZE,
-    D3DSRO_FORCE_int32  = 0x7fffffff # force 32-bit size enum
+    D3DSRO_FORCE_DWORD  = 0x7fffffff # force 32-bit size enum
 
   #---------------------------------------------------------------------
   # Source operand addressing modes
@@ -310,12 +311,12 @@ type
   D3DVS_ADDRESSMODE_TYPE* {.importcpp: "enum _D3DVS_ADDRESSMODE_TYPE", d3d9types_header, pure.} = enum
     D3DVS_ADDRMODE_ABSOLUTE  = (0 shl D3DVS_ADDRESSMODE_SHIFT),
     D3DVS_ADDRMODE_RELATIVE  = (1 shl D3DVS_ADDRESSMODE_SHIFT),
-    D3DVS_ADDRMODE_FORCE_int32 = 0x7fffffff # force 32-bit size enum
+    D3DVS_ADDRMODE_FORCE_DWORD = 0x7fffffff # force 32-bit size enum
 
   D3DSHADER_ADDRESSMODE_TYPE* {.importcpp: "enum _D3DSHADER_ADDRESSMODE_TYPE", d3d9types_header, pure.} = enum
     D3DSHADER_ADDRMODE_ABSOLUTE  = (0 shl D3DSHADER_ADDRESSMODE_SHIFT),
     D3DSHADER_ADDRMODE_RELATIVE  = (1 shl D3DSHADER_ADDRESSMODE_SHIFT),
-    D3DSHADER_ADDRMODE_FORCE_int32 = 0x7fffffff # force 32-bit size enum
+    D3DSHADER_ADDRMODE_FORCE_DWORD = 0x7fffffff # force 32-bit size enum
 
   #---------------------------------------------------------------------
   # High order surfaces
@@ -324,25 +325,25 @@ type
     D3DBASIS_BEZIER      = 0,
     D3DBASIS_BSPLINE     = 1,
     D3DBASIS_CATMULL_ROM = 2, # In D3D8 this used to be D3DBASIS_INTERPOLATE #
-    D3DBASIS_FORCE_int32 = 0x7fffffff
+    D3DBASIS_FORCE_DWORD = 0x7fffffff
 
   D3DDEGREETYPE* {.importcpp: "enum _D3DDEGREETYPE", d3d9types_header, pure.} = enum
     D3DDEGREE_LINEAR      = 1,
     D3DDEGREE_QUADRATIC   = 2,
     D3DDEGREE_CUBIC       = 3,
     D3DDEGREE_Qint32IC     = 5,
-    D3DDEGREE_FORCE_int32 = 0x7fffffff
+    D3DDEGREE_FORCE_DWORD = 0x7fffffff
 
   D3DPATCHEDGESTYLE* {.importcpp: "enum _D3DPATCHEDGESTYLE", d3d9types_header, pure.} = enum
     D3DPATCHEDGE_DISCRETE    = 0,
     D3DPATCHEDGE_CONTINUOUS  = 1,
-    D3DPATCHEDGE_FORCE_int32 = 0x7fffffff
+    D3DPATCHEDGE_FORCE_DWORD = 0x7fffffff
 
   D3DSTATEBLOCKTYPE* {.importcpp: "enum _D3DSTATEBLOCKTYPE", d3d9types_header, pure.} = enum
     D3DSBT_ALL           = 1, # capture all state
     D3DSBT_PIXELSTATE    = 2, # capture pixel state
     D3DSBT_VERTEXSTATE   = 3, # capture vertex state
-    D3DSBT_FORCE_int32   = 0x7fffffff
+    D3DSBT_FORCE_DWORD   = 0x7fffffff
 
   # The D3DVERTEXBLENDFLAGS type is used with D3DRS_VERTEXBLEND state.
   #
@@ -353,7 +354,7 @@ type
     D3DVBF_3WEIGHTS = 3,     # 4 matrix blending
     D3DVBF_TWEENING = 255,   # blending using D3DRS_TWEENFACTOR
     D3DVBF_0WEIGHTS = 256,   # one matrix is used with weight 1.0
-    D3DVBF_FORCE_int32 = 0x7fffffff # force 32-bit size enum
+    D3DVBF_FORCE_DWORD = 0x7fffffff # force 32-bit size enum
 
   D3DTEXTURETRANSFORMFLAGS* {.importcpp: "enum _D3DTEXTURETRANSFORMFLAGS", d3d9types_header, pure.} = enum
     D3DTTFF_DISABLE         = 0,    # texture coordinates are passed directly
@@ -362,7 +363,7 @@ type
     D3DTTFF_COUNT3          = 3,    # rasterizer should expect 3-D texture coords
     D3DTTFF_COUNT4          = 4,    # rasterizer should expect 4-D texture coords
     D3DTTFF_PROJECTED       = 256,  # texcoords to be divided by COUNTth element
-    D3DTTFF_FORCE_int32     = 0x7fffffff
+    D3DTTFF_FORCE_DWORD     = 0x7fffffff
 
   #---------------------------------------------------------------------
   # Direct3D9 Device types #
@@ -371,7 +372,7 @@ type
     D3DDEVTYPE_REF         = 2,
     D3DDEVTYPE_SW          = 3,
 
-    D3DDEVTYPE_FORCE_int32  = 0x7fffffff
+    D3DDEVTYPE_FORCE_DWORD  = 0x7fffffff
 
   # Multi-Sample buffer types #
   D3DMULTISAMPLE_TYPE* {.importcpp: "enum _D3DMULTISAMPLE_TYPE", d3d9types_header, pure.} = enum
@@ -393,7 +394,7 @@ type
     D3DMULTISAMPLE_15_SAMPLES      = 15,
     D3DMULTISAMPLE_16_SAMPLES      = 16,
 
-    D3DMULTISAMPLE_FORCE_int32     = 0x7fffffff
+    D3DMULTISAMPLE_FORCE_DWORD     = 0x7fffffff
 
   D3DFORMAT* {.importcpp: "enum _D3DFORMAT", d3d9types_header, pure.} = enum
     D3DFMT_UNKNOWN              =  0,
@@ -474,7 +475,7 @@ type
     D3DFMT_A32B32G32R32F        = 116,
 
     D3DFMT_CxV8U8               = 117,
-    D3DFMT_FORCE_int32          = 0x7fffffff
+    D3DFMT_FORCE_DWORD          = 0x7fffffff
 
   # Surface Description */  
   D3DSURFACE_DESC* {.importcpp: "struct _D3DSURFACE_DESC", d3d9types_header, pure.} = object
@@ -507,7 +508,7 @@ type
     D3DSWAPEFFECT_DISCARD           = 1,
     D3DSWAPEFFECT_FLIP              = 2,
     D3DSWAPEFFECT_COPY              = 3,
-    D3DSWAPEFFECT_FORCE_int32       = 0x7fffffff
+    D3DSWAPEFFECT_FORCE_DWORD       = 0x7fffffff
 
   # Pool types */
   D3DPOOL* {.importcpp: "enum _D3DPOOL", d3d9types_header, pure.} = enum
@@ -515,7 +516,7 @@ type
     D3DPOOL_MANAGED                 = 1,
     D3DPOOL_SYSTEMMEM               = 2,
     D3DPOOL_SCRATCH                 = 3,
-    D3DPOOL_FORCE_int32             = 0x7fffffff
+    D3DPOOL_FORCE_DWORD             = 0x7fffffff
 
   # Resize Optional Parameters */
   D3DPRESENT_PARAMETERS* {.importcpp: "struct _D3DPRESENT_PARAMETERS_", d3d9types_header.} = object
@@ -549,7 +550,7 @@ type
     D3DBACKBUFFER_TYPE_MONO         = 0,
     D3DBACKBUFFER_TYPE_LEFT         = 1,
     D3DBACKBUFFER_TYPE_RIGHT        = 2,
-    D3DBACKBUFFER_TYPE_FORCE_int32  = 0x7fffffff
+    D3DBACKBUFFER_TYPE_FORCE_DWORD  = 0x7fffffff
 
   # Types */
   D3DRESOURCETYPE* {.importcpp: "enum _D3DRESOURCETYPE", d3d9types_header, pure.} = enum
@@ -560,7 +561,7 @@ type
     D3DRTYPE_CUBETEXTURE            =  5,
     D3DRTYPE_VERTEXBUFFER           =  6,
     D3DRTYPE_INDEXBUFFER            =  7,
-    D3DRTYPE_FORCE_int32            = 0x7fffffff
+    D3DRTYPE_FORCE_DWORD            = 0x7fffffff
 
   D3DRENDERSTATETYPE* {.importcpp: "enum _D3DRENDERSTATETYPE", d3d9types_header, pure, size: int32.sizeof.} = enum
     D3DRS_ZENABLE                   = 7,    # D3DZBUFFERTYPE (or TRUE/FALSE for legacy) */
@@ -666,7 +667,7 @@ type
     D3DRS_SRCBLENDALPHA             = 207,  # SRC blend factor for the alpha channel when D3DRS_SEPARATEDESTALPHAENABLE is TRUE */
     D3DRS_DESTBLENDALPHA            = 208,  # DST blend factor for the alpha channel when D3DRS_SEPARATEDESTALPHAENABLE is TRUE */
     D3DRS_BLENDOPALPHA              = 209,  # Blending operation for the alpha channel when D3DRS_SEPARATEDESTALPHAENABLE is TRUE */
-    D3DRS_FORCE_int32               = 0x7fffffff, # force 32-bit size enum */
+    D3DRS_FORCE_DWORD               = 0x7fffffff, # force 32-bit size enum */
 
   # 
   # State enumerants for per-stage processing of fixed function pixel processing
@@ -690,7 +691,7 @@ type
     D3DTSS_ALPHAARG0      = 27, # D3DTA_* third arg for triadic ops */
     D3DTSS_RESULTARG      = 28, # D3DTA_* arg for result (CURRENT or TEMP) */
     D3DTSS_CONSTANT       = 32, # Per-stage constant D3DTA_CONSTANT */
-    D3DTSS_FORCE_int32   = 0x7fffffff # force 32-bit size enum */
+    D3DTSS_FORCE_DWORD   = 0x7fffffff # force 32-bit size enum */
 
   #
   # State enumerants for per-sampler texture processing.
@@ -709,7 +710,7 @@ type
     D3DSAMP_SRGBTEXTURE    = 11, # Default = 0 (which means Gamma 1.0, no correction required.) else correct for Gamma = 2.2 */
     D3DSAMP_ELEMENTINDEX   = 12, # When multi-element texture is assigned to sampler, this indicates which element index to use.  Default = 0.  */
     D3DSAMP_DMAPOFFSET     = 13, # Offset in vertices in the pre-sampled displacement map. Only valid for D3DDMAPSAMPLER sampler  */
-    D3DSAMP_FORCE_int32   = 0x7fffffff # force 32-bit size enum */
+    D3DSAMP_FORCE_DWORD   = 0x7fffffff # force 32-bit size enum */
 
   D3DTEXTUREOP* {.importcpp: "enum _D3DTEXTUREOP", d3d9types_header, pure, size: int32.sizeof.} = enum
     # Control
@@ -765,7 +766,7 @@ type
     # Triadic ops
     D3DTOP_MULTIPLYADD          = 25, # Arg0 + Arg1*Arg2
     D3DTOP_LERP                 = 26, # (Arg0)*Arg1 + (1-Arg0)*Arg2
-    D3DTOP_FORCE_int32 = 0x7fffffff
+    D3DTOP_FORCE_DWORD = 0x7fffffff
 
   D3DTEXTUREFILTERTYPE* {.importcpp: "enum _D3DTEXTUREFILTERTYPE", d3d9types_header, pure, size: int32.sizeof.} = enum
     D3DTEXF_NONE            = 0,    # filtering disabled (valid for mip filter only)
@@ -774,7 +775,7 @@ type
     D3DTEXF_ANISOTROPIC     = 3,    # anisotropic
     D3DTEXF_PYRAMIDALQUAD   = 6,    # 4-sample tent
     D3DTEXF_GAUSSIANQUAD    = 7,    # 4-sample gaussian
-    D3DTEXF_FORCE_int32     = 0x7fffffff   # force 32-bit size enum
+    D3DTEXF_FORCE_DWORD     = 0x7fffffff   # force 32-bit size enum
 
   # D3DTRANSFORMSTATETYPE* {.importcpp: "enum _D3DTRANSFORMSTATETYPE", d3d9types_header, pure, size: int32.sizeof.} = enum
   #   D3DTS_VIEW          = 2,
@@ -787,7 +788,7 @@ type
   #   D3DTS_TEXTURE5      = 21,
   #   D3DTS_TEXTURE6      = 22,
   #   D3DTS_TEXTURE7      = 23,
-  #   D3DTS_FORCE_int32    = 0x7fffffff # force 32-bit size enum */
+  #   D3DTS_FORCE_DWORD    = 0x7fffffff # force 32-bit size enum */
 
   D3DVERTEXBUFFER_DESC* {.importcpp: "struct _D3DVERTEXBUFFER_DESC", d3d9types_header, pure.} = object
     Format*: D3DFORMAT
