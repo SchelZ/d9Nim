@@ -1,4 +1,4 @@
-import winim/com, os, strutils
+import  os, strutils
 
 if not existsEnv("DXSDK_DIR"):
   raise newException(CatchableError, "Please add DirectX SDK to environment path")
@@ -23,14 +23,14 @@ const pathFile = getEnv("DXSDK_DIR") & "Include\\"
 
 
 const 
-  D3D_OK* = S_OK
-  D3D_SDK_VERSION*: uint = 31
+  D3D_OK*: int32 = 0
+  D3D_SDK_VERSION*: int32 = 31
   D3DADAPTER_DEFAULT* = 0
-  D3DCREATE_SOFTWARE_VERTEXPROCESSING*: DWORD = 0x00000020
-  D3DCREATE_HARDWARE_VERTEXPROCESSING*: DWORD = 0x00000040
-  D3DCLEAR_TARGET*: DWORD = 0x00000001
-  D3DCLEAR_ZBUFFER*: DWORD = 0x00000002
-  D3DCLEAR_STENCIL*: DWORD =  0x00000004
+  D3DCREATE_SOFTWARE_VERTEXPROCESSING*: int32 = 0x00000020
+  D3DCREATE_HARDWARE_VERTEXPROCESSING*: int32 = 0x00000040
+  D3DCLEAR_TARGET*: int32 = 0x00000001
+  D3DCLEAR_ZBUFFER*: int32 = 0x00000002
+  D3DCLEAR_STENCIL*: int32 =  0x00000004
 
   D3DFVF_RESERVED0* = 0x001
   D3DFVF_POSITION_MASK* = 0x400E
@@ -48,7 +48,7 @@ const
   D3DFVF_DIFFUSE* = 0x040
   D3DFVF_SPECULAR* = 0x080
 
-  D3DFVF_TEXCOUNT_MASK* = 0xf00
+  D3DFVF_TEXCOUNT_MASK* = 0xF00
   D3DFVF_TEXCOUNT_SHIFT* = 8
   D3DFVF_TEX0* = 0x000
   D3DFVF_TEX1* = 0x100
@@ -131,7 +131,7 @@ const
   D3DSP_SRCMOD_SHIFT* = 24
   D3DSP_SRCMOD_MASK* = 0x0F000000
 
-# const MAKEFOURCC: proc (ch0: int, ch1: char, ch2: char, ch3: char) = (cast[DWORD](cast[BYTE](ch0)) or (cast[DWORD](cast[BYTE](ch1) shl 8)) or ((DWORD)(BYTE)(ch2) shl 16) or ((DWORD)(BYTE)(ch3) shl 24 ))
+# const MAKEFOURCC: proc (ch0: int, ch1: char, ch2: char, ch3: char) = (cast[int32](cast[BYTE](ch0)) or (cast[int32](cast[BYTE](ch1) shl 8)) or ((int32)(BYTE)(ch2) shl 16) or ((int32)(BYTE)(ch3) shl 24 ))
 
   # Texture coordinate format bits in the FVF id
   D3DFVF_TEXTUREFORMAT2* = 0         # Two floating point values
@@ -192,7 +192,7 @@ const
 
   D3DLOCK_NO_DIRTY_UPDATE* =     0x00008000.int32 
 
-template MAKEFOURCC*(ch0: char, ch1: char, ch2: char, ch3: char): auto = (cast[DWORD](cast[BYTE](ch0)) or (cast[DWORD](cast[BYTE](ch1)) shl 8) or (cast[DWORD](cast[BYTE](ch2)) shl 16) or (cast[DWORD](cast[BYTE](ch3)) shl 24 ))
+template MAKEFOURCC*(ch0: char, ch1: char, ch2: char, ch3: char): auto = (cast[int32](cast[BYTE](ch0)) or (cast[int32](cast[BYTE](ch1)) shl 8) or (cast[int32](cast[BYTE](ch2)) shl 16) or (cast[int32](cast[BYTE](ch3)) shl 24 ))
 template D3DFVF_TEXCOORDSIZE3*(CoordIndex: untyped): untyped = (D3DFVF_TEXTUREFORMAT3 shl (CoordIndex*2 + 16))
 template D3DFVF_TEXCOORDSIZE2*(CoordIndex: untyped): untyped = (D3DFVF_TEXTUREFORMAT2)
 template D3DFVF_TEXCOORDSIZE4*(CoordIndex: untyped): untyped = (D3DFVF_TEXTUREFORMAT4 shl (CoordIndex*2 + 16))
@@ -205,13 +205,13 @@ type
     D3DSHADE_FLAT               = 1,
     D3DSHADE_GOURAUD            = 2,
     D3DSHADE_PHONG              = 3,
-    D3DSHADE_FORCE_DWORD        = 0x7fffffff # force 32-bit size enum */
+    D3DSHADE_FORCE_int32        = 0x7fffffff # force 32-bit size enum */
 
   D3DFILLMODE* {.importcpp: "enum _D3DFILLMODE", d3d9types_header, pure, size: int32.sizeof.} = enum
     D3DFILL_POINT               = 1,
     D3DFILL_WIREFRAME           = 2,
     D3DFILL_SOLID               = 3,
-    D3DFILL_FORCE_DWORD         = 0x7fffffff # force 32-bit size enum */
+    D3DFILL_FORCE_int32         = 0x7fffffff # force 32-bit size enum */
 
   D3DBLEND* {.importcpp: "enum _D3DBLEND", d3d9types_header, pure, size: int32.sizeof.} = enum
     D3DBLEND_ZERO               = 1,
@@ -229,7 +229,7 @@ type
     D3DBLEND_BOTHINVSRCALPHA    = 13,
     D3DBLEND_BLENDFACTOR        = 14, # Only supported if D3DPBLENDCAPS_BLENDFACTOR is on */
     D3DBLEND_INVBLENDFACTOR     = 15, # Only supported if D3DPBLENDCAPS_BLENDFACTOR is on */
-    D3DBLEND_FORCE_DWORD        = 0x7fffffff # force 32-bit size enum */
+    D3DBLEND_FORCE_int32        = 0x7fffffff # force 32-bit size enum */
 
   D3DBLENDOP* {.importcpp: "enum _D3DBLENDOP", d3d9types_header, pure, size: int32.sizeof.} = enum
     D3DBLENDOP_ADD              = 1,
@@ -237,7 +237,7 @@ type
     D3DBLENDOP_REVSUBTRACT      = 3,
     D3DBLENDOP_MIN              = 4,
     D3DBLENDOP_MAX              = 5,
-    D3DBLENDOP_FORCE_DWORD      = 0x7fffffff # force 32-bit size enum */
+    D3DBLENDOP_FORCE_int32      = 0x7fffffff # force 32-bit size enum */
 
   D3DTEXTUREADDRESS* {.importcpp: "enum _D3DTEXTUREADDRESS", d3d9types_header, pure, size: int32.sizeof.} = enum
       D3DTADDRESS_WRAP            = 1,
@@ -245,23 +245,23 @@ type
       D3DTADDRESS_CLAMP           = 3,
       D3DTADDRESS_BORDER          = 4,
       D3DTADDRESS_MIRRORONCE      = 5,
-      D3DTADDRESS_FORCE_DWORD     = 0x7fffffff # force 32-bit size enum */
+      D3DTADDRESS_FORCE_int32     = 0x7fffffff # force 32-bit size enum */
 
   D3DCULL* {.importcpp: "enum _D3DCULL", d3d9types_header, pure, size: int32.sizeof.} = enum
     D3DCULL_NONE                = 1,
     D3DCULL_CW                  = 2,
     D3DCULL_CWW                 = 3,
-    D3DCULL_FORCE_DWORD         = 0x7fffffff
+    D3DCULL_FORCE_int32         = 0x7fffffff
 
   D3DLOCKED_RECT* {.importcpp: "struct _D3DLOCKED_RECT", d3d9types_header, pure.} = object
     Pitch*: int
     pBits*: pointer
 
   D3DVIEWPORT9* {.importcpp: "struct _D3DVIEWPORT9", d3d9types_header, pure.} = object
-    X*: DWORD
-    Y*: DWORD             # Viewport Top left */
-    Width*: DWORD
-    Height*: DWORD       # Viewport Dimensions */
+    X*: int32
+    Y*: int32             # Viewport Top left */
+    Width*: int32
+    Height*: int32       # Viewport Dimensions */
     MinZ*: float         # Min/max of clip Volume */
     MaxZ*: float
 
@@ -290,7 +290,7 @@ type
     D3DSPR_MISCTYPE       = 17, # Miscellaneous (single) registers.
     D3DSPR_LABEL          = 18, # Label
     D3DSPR_PREDICATE      = 19, # Predicate register
-    D3DSPR_FORCE_DWORD  = 0x7fffffff,         # force 32-bit size enum
+    D3DSPR_FORCE_int32  = 0x7fffffff,         # force 32-bit size enum
 
   D3DSHADER_MISCTYPE_OFFSETS* {.importcpp: "enum _D3DSHADER_MISCTYPE_OFFSETS", d3d9types_header, pure.} = enum
     D3DSMO_POSITION = 0, # Input position x,y,z,rhw (PS)
@@ -302,7 +302,7 @@ type
     D3DSRO_POSITION = 0,
     D3DSRO_FOG,
     D3DSRO_POINT_SIZE,
-    D3DSRO_FORCE_DWORD  = 0x7fffffff # force 32-bit size enum
+    D3DSRO_FORCE_int32  = 0x7fffffff # force 32-bit size enum
 
   #---------------------------------------------------------------------
   # Source operand addressing modes
@@ -310,12 +310,12 @@ type
   D3DVS_ADDRESSMODE_TYPE* {.importcpp: "enum _D3DVS_ADDRESSMODE_TYPE", d3d9types_header, pure.} = enum
     D3DVS_ADDRMODE_ABSOLUTE  = (0 shl D3DVS_ADDRESSMODE_SHIFT),
     D3DVS_ADDRMODE_RELATIVE  = (1 shl D3DVS_ADDRESSMODE_SHIFT),
-    D3DVS_ADDRMODE_FORCE_DWORD = 0x7fffffff # force 32-bit size enum
+    D3DVS_ADDRMODE_FORCE_int32 = 0x7fffffff # force 32-bit size enum
 
   D3DSHADER_ADDRESSMODE_TYPE* {.importcpp: "enum _D3DSHADER_ADDRESSMODE_TYPE", d3d9types_header, pure.} = enum
     D3DSHADER_ADDRMODE_ABSOLUTE  = (0 shl D3DSHADER_ADDRESSMODE_SHIFT),
     D3DSHADER_ADDRMODE_RELATIVE  = (1 shl D3DSHADER_ADDRESSMODE_SHIFT),
-    D3DSHADER_ADDRMODE_FORCE_DWORD = 0x7fffffff # force 32-bit size enum
+    D3DSHADER_ADDRMODE_FORCE_int32 = 0x7fffffff # force 32-bit size enum
 
   #---------------------------------------------------------------------
   # High order surfaces
@@ -324,25 +324,25 @@ type
     D3DBASIS_BEZIER      = 0,
     D3DBASIS_BSPLINE     = 1,
     D3DBASIS_CATMULL_ROM = 2, # In D3D8 this used to be D3DBASIS_INTERPOLATE #
-    D3DBASIS_FORCE_DWORD = 0x7fffffff
+    D3DBASIS_FORCE_int32 = 0x7fffffff
 
   D3DDEGREETYPE* {.importcpp: "enum _D3DDEGREETYPE", d3d9types_header, pure.} = enum
     D3DDEGREE_LINEAR      = 1,
     D3DDEGREE_QUADRATIC   = 2,
     D3DDEGREE_CUBIC       = 3,
-    D3DDEGREE_QUINTIC     = 5,
-    D3DDEGREE_FORCE_DWORD = 0x7fffffff
+    D3DDEGREE_Qint32IC     = 5,
+    D3DDEGREE_FORCE_int32 = 0x7fffffff
 
   D3DPATCHEDGESTYLE* {.importcpp: "enum _D3DPATCHEDGESTYLE", d3d9types_header, pure.} = enum
     D3DPATCHEDGE_DISCRETE    = 0,
     D3DPATCHEDGE_CONTINUOUS  = 1,
-    D3DPATCHEDGE_FORCE_DWORD = 0x7fffffff
+    D3DPATCHEDGE_FORCE_int32 = 0x7fffffff
 
   D3DSTATEBLOCKTYPE* {.importcpp: "enum _D3DSTATEBLOCKTYPE", d3d9types_header, pure.} = enum
     D3DSBT_ALL           = 1, # capture all state
     D3DSBT_PIXELSTATE    = 2, # capture pixel state
     D3DSBT_VERTEXSTATE   = 3, # capture vertex state
-    D3DSBT_FORCE_DWORD   = 0x7fffffff
+    D3DSBT_FORCE_int32   = 0x7fffffff
 
   # The D3DVERTEXBLENDFLAGS type is used with D3DRS_VERTEXBLEND state.
   #
@@ -353,7 +353,7 @@ type
     D3DVBF_3WEIGHTS = 3,     # 4 matrix blending
     D3DVBF_TWEENING = 255,   # blending using D3DRS_TWEENFACTOR
     D3DVBF_0WEIGHTS = 256,   # one matrix is used with weight 1.0
-    D3DVBF_FORCE_DWORD = 0x7fffffff # force 32-bit size enum
+    D3DVBF_FORCE_int32 = 0x7fffffff # force 32-bit size enum
 
   D3DTEXTURETRANSFORMFLAGS* {.importcpp: "enum _D3DTEXTURETRANSFORMFLAGS", d3d9types_header, pure.} = enum
     D3DTTFF_DISABLE         = 0,    # texture coordinates are passed directly
@@ -362,7 +362,7 @@ type
     D3DTTFF_COUNT3          = 3,    # rasterizer should expect 3-D texture coords
     D3DTTFF_COUNT4          = 4,    # rasterizer should expect 4-D texture coords
     D3DTTFF_PROJECTED       = 256,  # texcoords to be divided by COUNTth element
-    D3DTTFF_FORCE_DWORD     = 0x7fffffff
+    D3DTTFF_FORCE_int32     = 0x7fffffff
 
   #---------------------------------------------------------------------
   # Direct3D9 Device types #
@@ -371,7 +371,7 @@ type
     D3DDEVTYPE_REF         = 2,
     D3DDEVTYPE_SW          = 3,
 
-    D3DDEVTYPE_FORCE_DWORD  = 0x7fffffff
+    D3DDEVTYPE_FORCE_int32  = 0x7fffffff
 
   # Multi-Sample buffer types #
   D3DMULTISAMPLE_TYPE* {.importcpp: "enum _D3DMULTISAMPLE_TYPE", d3d9types_header, pure.} = enum
@@ -393,7 +393,7 @@ type
     D3DMULTISAMPLE_15_SAMPLES      = 15,
     D3DMULTISAMPLE_16_SAMPLES      = 16,
 
-    D3DMULTISAMPLE_FORCE_DWORD     = 0x7fffffff
+    D3DMULTISAMPLE_FORCE_int32     = 0x7fffffff
 
   D3DFORMAT* {.importcpp: "enum _D3DFORMAT", d3d9types_header, pure.} = enum
     D3DFMT_UNKNOWN              =  0,
@@ -474,40 +474,40 @@ type
     D3DFMT_A32B32G32R32F        = 116,
 
     D3DFMT_CxV8U8               = 117,
-    D3DFMT_FORCE_DWORD          = 0x7fffffff
+    D3DFMT_FORCE_int32          = 0x7fffffff
 
   # Surface Description */  
   D3DSURFACE_DESC* {.importcpp: "struct _D3DSURFACE_DESC", d3d9types_header, pure.} = object
     Format*: D3DFORMAT
     Type*: D3DRESOURCETYPE
-    Usage*: DWORD
+    Usage*: int32
     Pool*: D3DPOOL
 
     MultiSampleType*: D3DMULTISAMPLE_TYPE
-    MultiSampleQuality*: DWORD
-    Width*: UINT
-    Height*: UINT
+    MultiSampleQuality*: int32
+    Width*: int32
+    Height*: int32
 
   # Display Modes */
   D3DDISPLAYMODE* {.importcpp: "struct _D3DDISPLAYMODE", d3d9types_header, pure.} = object
-    Width*: uint
-    Height*: uint
-    RefreshRate*: uint
+    Width*: int32
+    Height*: int32
+    RefreshRate*: int32
     Format*: D3DFORMAT
 
   # Creation Parameters */
   D3DDEVICE_CREATION_PARAMETERS* {.importcpp: "struct _D3DDEVICE_CREATION_PARAMETERS", d3d9types_header, pure.} = object
-    AdapterOrdinal*: uint
+    AdapterOrdinal*: int32
     DeviceType*: D3DDEVTYPE
-    hFocusWindow*: HWND
-    BehaviorFlags*: DWORD
+    hFocusWindow*: int
+    BehaviorFlags*: int32
 
   # SwapEffects */
   D3DSWAPEFFECT* {.importcpp: "enum _D3DSWAPEFFECT", d3d9types_header, pure.} = enum
     D3DSWAPEFFECT_DISCARD           = 1,
     D3DSWAPEFFECT_FLIP              = 2,
     D3DSWAPEFFECT_COPY              = 3,
-    D3DSWAPEFFECT_FORCE_DWORD       = 0x7fffffff
+    D3DSWAPEFFECT_FORCE_int32       = 0x7fffffff
 
   # Pool types */
   D3DPOOL* {.importcpp: "enum _D3DPOOL", d3d9types_header, pure.} = enum
@@ -515,41 +515,41 @@ type
     D3DPOOL_MANAGED                 = 1,
     D3DPOOL_SYSTEMMEM               = 2,
     D3DPOOL_SCRATCH                 = 3,
-    D3DPOOL_FORCE_DWORD             = 0x7fffffff
+    D3DPOOL_FORCE_int32             = 0x7fffffff
 
   # Resize Optional Parameters */
   D3DPRESENT_PARAMETERS* {.importcpp: "struct _D3DPRESENT_PARAMETERS_", d3d9types_header.} = object
-    BackBufferWidth*: uint
-    BackBufferHeight*: uint
+    BackBufferWidth*: int32
+    BackBufferHeight*: int32
     BackBufferFormat*: D3DFORMAT
-    BackBufferCount*: uint
+    BackBufferCount*: int32
 
     MultiSampleType*: D3DMULTISAMPLE_TYPE
-    MultiSampleQuality*: DWORD
+    MultiSampleQuality*: int32
 
     SwapEffect*: D3DSWAPEFFECT
     hDeviceWindow*: pointer
     Windowed*: bool
     EnableAutoDepthStencil*: bool
     AutoDepthStencilFormat*: D3DFORMAT
-    Flags*: DWORD
+    Flags*: int32
 
     # FullScreen_RefreshRateInHz must be zero for Windowed mode #
-    FullScreen_RefreshRateInHz*: uint
-    PresentationInterval*: uint
+    FullScreen_RefreshRateInHz*: int32
+    PresentationInterval*: int32
 
   # Gamma Ramp: Same as DX7 */
   D3DGAMMARAMP* {.importcpp: "struct _D3DGAMMARAMP", d3d9types_header, pure.} = object
-    red*: array[256, WORD]
-    green*: array[256, WORD]
-    blue*: array[256, WORD]
+    red*: array[256, uint16]
+    green*: array[256, uint16]
+    blue*: array[256, uint16]
 
   # Back buffer types */
   D3DBACKBUFFER_TYPE* {.importcpp: "enum _D3DBACKBUFFER_TYPE", d3d9types_header, pure.} = enum
     D3DBACKBUFFER_TYPE_MONO         = 0,
     D3DBACKBUFFER_TYPE_LEFT         = 1,
     D3DBACKBUFFER_TYPE_RIGHT        = 2,
-    D3DBACKBUFFER_TYPE_FORCE_DWORD  = 0x7fffffff
+    D3DBACKBUFFER_TYPE_FORCE_int32  = 0x7fffffff
 
   # Types */
   D3DRESOURCETYPE* {.importcpp: "enum _D3DRESOURCETYPE", d3d9types_header, pure.} = enum
@@ -560,7 +560,7 @@ type
     D3DRTYPE_CUBETEXTURE            =  5,
     D3DRTYPE_VERTEXBUFFER           =  6,
     D3DRTYPE_INDEXBUFFER            =  7,
-    D3DRTYPE_FORCE_DWORD            = 0x7fffffff
+    D3DRTYPE_FORCE_int32            = 0x7fffffff
 
   D3DRENDERSTATETYPE* {.importcpp: "enum _D3DRENDERSTATETYPE", d3d9types_header, pure, size: int32.sizeof.} = enum
     D3DRS_ZENABLE                   = 7,    # D3DZBUFFERTYPE (or TRUE/FALSE for legacy) */
@@ -623,7 +623,7 @@ type
     D3DRS_POINTSCALE_B              = 159,   # float point attenuation B value */
     D3DRS_POINTSCALE_C              = 160,   # float point attenuation C value */
     D3DRS_MULTISAMPLEANTIALIAS      = 161,  #BOOL - set to do FSAA with multisample buffer
-    D3DRS_MULTISAMPLEMASK           = 162,  #DWORD - per-sample enable/disable
+    D3DRS_MULTISAMPLEMASK           = 162,  #int32 - per-sample enable/disable
     D3DRS_PATCHEDGESTYLE            = 163,  #Sets whether patch edges will use float style tessellation
     D3DRS_DEBUGMONITORTOKEN         = 165,  #DEBUG ONLY - token to debug monitor
     D3DRS_POINTSIZE_MAX             = 166,   # float point size max threshold */
@@ -666,7 +666,7 @@ type
     D3DRS_SRCBLENDALPHA             = 207,  # SRC blend factor for the alpha channel when D3DRS_SEPARATEDESTALPHAENABLE is TRUE */
     D3DRS_DESTBLENDALPHA            = 208,  # DST blend factor for the alpha channel when D3DRS_SEPARATEDESTALPHAENABLE is TRUE */
     D3DRS_BLENDOPALPHA              = 209,  # Blending operation for the alpha channel when D3DRS_SEPARATEDESTALPHAENABLE is TRUE */
-    D3DRS_FORCE_DWORD               = 0x7fffffff, # force 32-bit size enum */
+    D3DRS_FORCE_int32               = 0x7fffffff, # force 32-bit size enum */
 
   # 
   # State enumerants for per-stage processing of fixed function pixel processing
@@ -690,7 +690,7 @@ type
     D3DTSS_ALPHAARG0      = 27, # D3DTA_* third arg for triadic ops */
     D3DTSS_RESULTARG      = 28, # D3DTA_* arg for result (CURRENT or TEMP) */
     D3DTSS_CONSTANT       = 32, # Per-stage constant D3DTA_CONSTANT */
-    D3DTSS_FORCE_DWORD   = 0x7fffffff # force 32-bit size enum */
+    D3DTSS_FORCE_int32   = 0x7fffffff # force 32-bit size enum */
 
   #
   # State enumerants for per-sampler texture processing.
@@ -704,12 +704,12 @@ type
     D3DSAMP_MINFILTER      = 6,  # D3DTEXTUREFILTER filter to use for minification */
     D3DSAMP_MIPFILTER      = 7,  # D3DTEXTUREFILTER filter to use between mipmaps during minification */
     D3DSAMP_MIPMAPLODBIAS  = 8,  # float Mipmap LOD bias */
-    D3DSAMP_MAXMIPLEVEL    = 9,  # DWORD 0..(n-1) LOD index of largest map to use (0 == largest) */
-    D3DSAMP_MAXANISOTROPY  = 10, # DWORD maximum anisotropy */
+    D3DSAMP_MAXMIPLEVEL    = 9,  # int32 0..(n-1) LOD index of largest map to use (0 == largest) */
+    D3DSAMP_MAXANISOTROPY  = 10, # int32 maximum anisotropy */
     D3DSAMP_SRGBTEXTURE    = 11, # Default = 0 (which means Gamma 1.0, no correction required.) else correct for Gamma = 2.2 */
     D3DSAMP_ELEMENTINDEX   = 12, # When multi-element texture is assigned to sampler, this indicates which element index to use.  Default = 0.  */
     D3DSAMP_DMAPOFFSET     = 13, # Offset in vertices in the pre-sampled displacement map. Only valid for D3DDMAPSAMPLER sampler  */
-    D3DSAMP_FORCE_DWORD   = 0x7fffffff # force 32-bit size enum */
+    D3DSAMP_FORCE_int32   = 0x7fffffff # force 32-bit size enum */
 
   D3DTEXTUREOP* {.importcpp: "enum _D3DTEXTUREOP", d3d9types_header, pure, size: int32.sizeof.} = enum
     # Control
@@ -765,7 +765,7 @@ type
     # Triadic ops
     D3DTOP_MULTIPLYADD          = 25, # Arg0 + Arg1*Arg2
     D3DTOP_LERP                 = 26, # (Arg0)*Arg1 + (1-Arg0)*Arg2
-    D3DTOP_FORCE_DWORD = 0x7fffffff
+    D3DTOP_FORCE_int32 = 0x7fffffff
 
   D3DTEXTUREFILTERTYPE* {.importcpp: "enum _D3DTEXTUREFILTERTYPE", d3d9types_header, pure, size: int32.sizeof.} = enum
     D3DTEXF_NONE            = 0,    # filtering disabled (valid for mip filter only)
@@ -774,7 +774,7 @@ type
     D3DTEXF_ANISOTROPIC     = 3,    # anisotropic
     D3DTEXF_PYRAMIDALQUAD   = 6,    # 4-sample tent
     D3DTEXF_GAUSSIANQUAD    = 7,    # 4-sample gaussian
-    D3DTEXF_FORCE_DWORD     = 0x7fffffff   # force 32-bit size enum
+    D3DTEXF_FORCE_int32     = 0x7fffffff   # force 32-bit size enum
 
   # D3DTRANSFORMSTATETYPE* {.importcpp: "enum _D3DTRANSFORMSTATETYPE", d3d9types_header, pure, size: int32.sizeof.} = enum
   #   D3DTS_VIEW          = 2,
@@ -787,15 +787,15 @@ type
   #   D3DTS_TEXTURE5      = 21,
   #   D3DTS_TEXTURE6      = 22,
   #   D3DTS_TEXTURE7      = 23,
-  #   D3DTS_FORCE_DWORD    = 0x7fffffff # force 32-bit size enum */
+  #   D3DTS_FORCE_int32    = 0x7fffffff # force 32-bit size enum */
 
   D3DVERTEXBUFFER_DESC* {.importcpp: "struct _D3DVERTEXBUFFER_DESC", d3d9types_header, pure.} = object
     Format*: D3DFORMAT
     Type*: D3DRESOURCETYPE
-    Usage*: DWORD
+    Usage*: int32
     Pool*: D3DPOOL
-    Size*: UINT
-    FVF*: DWORD
+    Size*: int32
+    FVF*: int32
 
   D3DMATRIX* {.importcpp: "struct _D3DMATRIX", d3d9types_header, bycopy, union, pure.} = object
     v11*: float32 
@@ -817,23 +817,20 @@ type
     m*: array[4, array[4, float32]]
 
   D3DRECT* {.importcpp: "struct _D3DRECT", d3d9types_header, pure.} = object
-    x1*: LONG
-    y1*: LONG
-    x2*: LONG
-    y2*: LONG
+    x1*: int32
+    y1*: int32
+    x2*: int32
+    y2*: int32
 
-  RECTT* {.importcpp: "struct tagRECT", header: "windef.h", pure.} = object
-    x1*: LONG
-    y1*: LONG
-    x2: LONG
-    y2: LONG
+  RCBound {.pure.}= object
+    x1, y1, x2, y2: int32
 
   RGNDATAHEADER* {.importcpp: "struct _RGNDATAHEADER", header: "wingdi.h", pure.} = object
-    dwSize*: DWORD
-    iType*:  DWORD
-    nCount*:  DWORD
-    nRgnSize*: DWORD
-    rcBound*: RECTT
+    dwSize*: int32
+    iType*:  int32
+    nCount*:  int32
+    nRgnSize*: int32
+    rcBound*: RCBound
 
   RGNDATA* {.importcpp: "struct _RGNDATA", header: "wingdi.h", pure.} = object
     rdh*: RGNDATAHEADER
@@ -860,14 +857,14 @@ const
 
 type
   D3DVSHADERCAPS2_0* {.importcpp: "struct _D3DVSHADERCAPS2_0", d3d9caps_header, pure.} = object
-    Caps*: DWORD
+    Caps*: int32
     DynamicFlowControlDepth*: int
     NumTemps*: int
     StaticFlowControlDepth*: int
 
 
   D3DPSHADERCAPS2_0* {.importcpp: "struct _D3DPSHADERCAPS2_0", d3d9caps_header, pure.} = object
-    Caps*: DWORD
+    Caps*: int32
     DynamicFlowControlDepth*: int
     NumTemps*: int
     StaticFlowControlDepth*: int
@@ -876,42 +873,42 @@ type
   D3DCAPS9* {.importcpp: "struct _D3DCAPS9", d3d9caps_header, pure.} = object
     #Device Info */
     DeviceType*: D3DDEVTYPE
-    AdapterOrdinal*: uint
+    AdapterOrdinal*: int32
 
     # Caps from DX7 Draw */
-    Caps: DWORD
-    Caps2: DWORD
-    Caps3*: DWORD
-    PresentationIntervals*: DWORD
+    Caps: int32
+    Caps2: int32
+    Caps3*: int32
+    PresentationIntervals*: int32
 
     # Cursor Caps */
-    # DWORD   CursorCaps;
+    # int32   CursorCaps;
 
     # # 3D Device Caps */
-    # DWORD   DevCaps;
+    # int32   DevCaps;
 
-    # DWORD   PrimitiveMiscCaps;
-    # DWORD   RasterCaps;
-    # DWORD   ZCmpCaps;
-    # DWORD   SrcBlendCaps;
-    # DWORD   DestBlendCaps;
-    # DWORD   AlphaCmpCaps;
-    # DWORD   ShadeCaps;
-    # DWORD   TextureCaps;
-    # DWORD   TextureFilterCaps;          # D3DPTFILTERCAPS for IDirect3DTexture9's
-    # DWORD   CubeTextureFilterCaps;      # D3DPTFILTERCAPS for IDirect3DCubeTexture9's
-    # DWORD   VolumeTextureFilterCaps;    # D3DPTFILTERCAPS for IDirect3DVolumeTexture9's
-    # DWORD   TextureAddressCaps;         # D3DPTADDRESSCAPS for IDirect3DTexture9's
-    # DWORD   VolumeTextureAddressCaps;   # D3DPTADDRESSCAPS for IDirect3DVolumeTexture9's
+    # int32   PrimitiveMiscCaps;
+    # int32   RasterCaps;
+    # int32   ZCmpCaps;
+    # int32   SrcBlendCaps;
+    # int32   DestBlendCaps;
+    # int32   AlphaCmpCaps;
+    # int32   ShadeCaps;
+    # int32   TextureCaps;
+    # int32   TextureFilterCaps;          # D3DPTFILTERCAPS for IDirect3DTexture9's
+    # int32   CubeTextureFilterCaps;      # D3DPTFILTERCAPS for IDirect3DCubeTexture9's
+    # int32   VolumeTextureFilterCaps;    # D3DPTFILTERCAPS for IDirect3DVolumeTexture9's
+    # int32   TextureAddressCaps;         # D3DPTADDRESSCAPS for IDirect3DTexture9's
+    # int32   VolumeTextureAddressCaps;   # D3DPTADDRESSCAPS for IDirect3DVolumeTexture9's
 
-    # DWORD   LineCaps;                   # D3DLINECAPS
+    # int32   LineCaps;                   # D3DLINECAPS
 
-    # DWORD   MaxTextureWidth, MaxTextureHeight;
-    # DWORD   MaxVolumeExtent;
+    # int32   MaxTextureWidth, MaxTextureHeight;
+    # int32   MaxVolumeExtent;
 
-    # DWORD   MaxTextureRepeat;
-    # DWORD   MaxTextureAspectRatio;
-    # DWORD   MaxAnisotropy;
+    # int32   MaxTextureRepeat;
+    # int32   MaxTextureAspectRatio;
+    # int32   MaxAnisotropy;
     # float   MaxVertexW;
 
     # float   GuardBandLeft;
@@ -920,51 +917,51 @@ type
     # float   GuardBandBottom;
 
     # float   ExtentsAdjust;
-    # DWORD   StencilCaps;
+    # int32   StencilCaps;
 
-    # DWORD   FVFCaps;
-    # DWORD   TextureOpCaps;
-    # DWORD   MaxTextureBlendStages;
-    # DWORD   MaxSimultaneousTextures;
+    # int32   FVFCaps;
+    # int32   TextureOpCaps;
+    # int32   MaxTextureBlendStages;
+    # int32   MaxSimultaneousTextures;
 
-    # DWORD   VertexProcessingCaps;
-    # DWORD   MaxActiveLights;
-    # DWORD   MaxUserClipPlanes;
-    # DWORD   MaxVertexBlendMatrices;
-    # DWORD   MaxVertexBlendMatrixIndex;
+    # int32   VertexProcessingCaps;
+    # int32   MaxActiveLights;
+    # int32   MaxUserClipPlanes;
+    # int32   MaxVertexBlendMatrices;
+    # int32   MaxVertexBlendMatrixIndex;
 
     # float   MaxPointSize;
 
-    # DWORD   MaxPrimitiveCount;          # max number of primitives per DrawPrimitive call
-    # DWORD   MaxVertexIndex;
-    # DWORD   MaxStreams;
-    # DWORD   MaxStreamStride;            # max stride for SetStreamSource
+    # int32   MaxPrimitiveCount;          # max number of primitives per DrawPrimitive call
+    # int32   MaxVertexIndex;
+    # int32   MaxStreams;
+    # int32   MaxStreamStride;            # max stride for SetStreamSource
 
-    # DWORD   VertexShaderVersion;
-    # DWORD   MaxVertexShaderConst;       # number of vertex shader constant registers
+    # int32   VertexShaderVersion;
+    # int32   MaxVertexShaderConst;       # number of vertex shader constant registers
 
-    # DWORD   PixelShaderVersion;
+    # int32   PixelShaderVersion;
     # float   PixelShader1xMaxValue;      # max value storable in registers of ps.1.x shaders
 
     # # Here are the DX9 specific ones
-    # DWORD   DevCaps2;
+    # int32   DevCaps2;
 
     # float   MaxNpatchTessellationLevel;
-    # DWORD   Reserved5;
+    # int32   Reserved5;
 
-    # UINT    MasterAdapterOrdinal;       # ordinal of master adaptor for adapter group
-    # UINT    AdapterOrdinalInGroup;      # ordinal inside the adapter group
-    # UINT    NumberOfAdaptersInGroup;    # number of adapters in this adapter group (only if master)
-    # DWORD   DeclTypes;                  # Data types, supported in vertex declarations
-    # DWORD   NumSimultaneousRTs;         # Will be at least 1
-    # DWORD   StretchRectFilterCaps;      # Filter caps supported by StretchRect
+    # int32    MasterAdapterOrdinal;       # ordinal of master adaptor for adapter group
+    # int32    AdapterOrdinalInGroup;      # ordinal inside the adapter group
+    # int32    NumberOfAdaptersInGroup;    # number of adapters in this adapter group (only if master)
+    # int32   DeclTypes;                  # Data types, supported in vertex declarations
+    # int32   NumSimultaneousRTs;         # Will be at least 1
+    # int32   StretchRectFilterCaps;      # Filter caps supported by StretchRect
     # D3DVSHADERCAPS2_0 VS20Caps;
     # D3DPSHADERCAPS2_0 PS20Caps;
-    # DWORD   VertexTextureFilterCaps;    # D3DPTFILTERCAPS for IDirect3DTexture9's for texture, used in vertex shaders
-    # DWORD   MaxVShaderInstructionsExecuted; # maximum number of vertex shader instructions that can be executed
-    # DWORD   MaxPShaderInstructionsExecuted; # maximum number of pixel shader instructions that can be executed
-    # DWORD   MaxVertexShader30InstructionSlots; 
-    # DWORD   MaxPixelShader30InstructionSlots;
+    # int32   VertexTextureFilterCaps;    # D3DPTFILTERCAPS for IDirect3DTexture9's for texture, used in vertex shaders
+    # int32   MaxVShaderInstructionsExecuted; # maximum number of vertex shader instructions that can be executed
+    # int32   MaxPShaderInstructionsExecuted; # maximum number of pixel shader instructions that can be executed
+    # int32   MaxVertexShader30InstructionSlots; 
+    # int32   MaxPixelShader30InstructionSlots;
 
 
 
@@ -992,17 +989,17 @@ proc Vector*(x: float32, y: float32): D3DXVECTOR2 =
 type 
   IDirect3DResource9* {.importcpp: "IDirect3DResource9", d3d9_header, inheritable, pure.} = object
     #*** IUnknown methods ***/
-    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
-    AddRef*: proc (): ULONG {.stdcall.}
-    Release*: proc (): ULONG {.stdcall.}
+    QueryInterface*: proc (riid: pointer, ppvObj: ptr pointer): int32 {.stdcall.}
+    AddRef*: proc (): int32 {.stdcall.}
+    Release*: proc (): void {.stdcall.}
 
     #*** IDirect3DResource9 methods ***#
     # GetDevice)(THIS_ IDirect3DDevice9** ppDevice) PURE;
-    # SetPrivateData)(THIS_ REFGUID refguid,CONST void* pData,DWORD SizeOfData,DWORD Flags) PURE;
-    # GetPrivateData)(THIS_ REFGUID refguid,void* pData,DWORD* pSizeOfData) PURE;
+    # SetPrivateData)(THIS_ REFGUID refguid,CONST void* pData,int32 SizeOfData,int32 Flags) PURE;
+    # GetPrivateData)(THIS_ REFGUID refguid,void* pData,int32* pSizeOfData) PURE;
     # FreePrivateData)(THIS_ REFGUID refguid) PURE;
-    # DWORD, SetPriority)(THIS_ DWORD PriorityNew) PURE;
-    # DWORD, GetPriority)(THIS) PURE;
+    # int32, SetPriority)(THIS_ int32 PriorityNew) PURE;
+    # int32, GetPriority)(THIS) PURE;
     # void, PreLoad)(THIS) PURE;
     # D3DRESOURCETYPE, GetType)(THIS) PURE;
 
@@ -1012,235 +1009,234 @@ type
 
   IDirect3D9* {.importcpp: "IDirect3D9",  d3d9_header, inheritable, pure.} = object
     #*** IUnknown methods ***/
-    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
-    AddRef*: proc (): ULONG {.stdcall.}
-    Release*: proc (): ULONG {.stdcall.}
+    QueryInterface*: proc (riid: pointer, ppvObj: ptr pointer): int32 {.stdcall.}
+    AddRef*: proc (): int32 {.stdcall.}
+    Release*: proc (): void {.stdcall.}
 
     #*** IDirect3D9 methods ***/
-    RegisterSoftwareDevice*: proc (pInitializeFunction: pointer): HRESULT {.stdcall.}
-    GetAdapterCount*: proc (): UINT {.stdcall.}
-    # STDMETHOD(GetAdapterIdentifier)(THIS_ UINT Adapter,DWORD Flags,D3DADAPTER_IDENTIFIER9* pIdentifier) PURE;
-    # STDMETHOD_(UINT, GetAdapterModeCount)(THIS_ UINT Adapter,D3DFORMAT Format) PURE;
-    # STDMETHOD(EnumAdapterModes)(THIS_ UINT Adapter,D3DFORMAT Format,UINT Mode,D3DDISPLAYMODE* pMode) PURE;
-    # STDMETHOD(GetAdapterDisplayMode)(THIS_ UINT Adapter,D3DDISPLAYMODE* pMode) PURE;
-    # STDMETHOD(CheckDeviceType)(THIS_ UINT iAdapter,D3DDEVTYPE DevType,D3DFORMAT DisplayFormat,D3DFORMAT BackBufferFormat,BOOL bWindowed) PURE;
-    # STDMETHOD(CheckDeviceFormat)(THIS_ UINT Adapter,D3DDEVTYPE DeviceType,D3DFORMAT AdapterFormat,DWORD Usage,D3DRESOURCETYPE RType,D3DFORMAT CheckFormat) PURE;
-    CheckDeviceMultiSampleType*: proc (Adapter: UINT, DeviceType: D3DDEVTYPE, SurfaceFormat: D3DFORMAT, Windowed: BOOL, MultiSampleType: D3DMULTISAMPLE_TYPE, pQualityLevels: ptr DWORD): HRESULT {.stdcall.}
-    CheckDepthStencilMatch*: proc (Adapter: UINT, DeviceType: D3DDEVTYPE, AdapterFormat: D3DFORMAT, RenderTargetFormat: D3DFORMAT, DepthStencilFormat: D3DFORMAT): HRESULT {.stdcall.}
-    CheckDeviceFormatConversion*: proc (Adapter: UINT, DeviceType: D3DDEVTYPE, SourceFormat: D3DFORMAT, TargetFormat: D3DFORMAT): HRESULT {.stdcall.}
-    GetDeviceCaps*: proc (Adapter: UINT, DeviceType: D3DDEVTYPE, pCaps: ptr D3DCAPS9): HRESULT {.stdcall.}
-    GetAdapterMonitor*: proc (Adapter: UINT): HMONITOR {.stdcall.}
-    CreateDevice*: proc (Adapter: UINT, DeviceType: D3DDEVTYPE, hFocusWindow: pointer, BehaviorFlags: DWORD, pPresentationParameters: ptr D3DPRESENT_PARAMETERS, ppReturnedDeviceInterface: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
+    RegisterSoftwareDevice*: proc (pInitializeFunction: pointer): int32 {.stdcall.}
+    GetAdapterCount*: proc (): int32 {.stdcall.}
+    # STDMETHOD(GetAdapterIdentifier)(THIS_ int32 Adapter,int32 Flags,D3DADAPTER_IDENTIFIER9* pIdentifier) PURE;
+    # STDMETHOD_(int32, GetAdapterModeCount)(THIS_ int32 Adapter,D3DFORMAT Format) PURE;
+    # STDMETHOD(EnumAdapterModes)(THIS_ int32 Adapter,D3DFORMAT Format,int32 Mode,D3DDISPLAYMODE* pMode) PURE;
+    # STDMETHOD(GetAdapterDisplayMode)(THIS_ int32 Adapter,D3DDISPLAYMODE* pMode) PURE;
+    # STDMETHOD(CheckDeviceType)(THIS_ int32 iAdapter,D3DDEVTYPE DevType,D3DFORMAT DisplayFormat,D3DFORMAT BackBufferFormat,BOOL bWindowed) PURE;
+    # STDMETHOD(CheckDeviceFormat)(THIS_ int32 Adapter,D3DDEVTYPE DeviceType,D3DFORMAT AdapterFormat,int32 Usage,D3DRESOURCETYPE RType,D3DFORMAT CheckFormat) PURE;
+    CheckDeviceMultiSampleType*: proc (Adapter: int32, DeviceType: D3DDEVTYPE, SurfaceFormat: D3DFORMAT, Windowed: bool, MultiSampleType: D3DMULTISAMPLE_TYPE, pQualityLevels: ptr int32): int32 {.stdcall.}
+    CheckDepthStencilMatch*: proc (Adapter: int32, DeviceType: D3DDEVTYPE, AdapterFormat: D3DFORMAT, RenderTargetFormat: D3DFORMAT, DepthStencilFormat: D3DFORMAT): int32 {.stdcall.}
+    CheckDeviceFormatConversion*: proc (Adapter: int32, DeviceType: D3DDEVTYPE, SourceFormat: D3DFORMAT, TargetFormat: D3DFORMAT): int32 {.stdcall.}
+    GetDeviceCaps*: proc (Adapter: int32, DeviceType: D3DDEVTYPE, pCaps: ptr D3DCAPS9): int32 {.stdcall.}
+    GetAdapterMonitor*: proc (Adapter: int32): int {.stdcall.}
+    CreateDevice*: proc (Adapter: int32, DeviceType: D3DDEVTYPE, hFocusWindow: pointer, BehaviorFlags: int32, pPresentationParameters: ptr D3DPRESENT_PARAMETERS, ppReturnedDeviceInterface: ptr ptr IDirect3DDevice9): void {.stdcall.}
   LPDIRECT3D9* {.importcpp: "LPDIRECT3D9",  d3d9_header.} = ptr IDirect3D9
   PDIRECT3D9* {.importcpp: "PDIRECT3D9",  d3d9_header.} = ptr IDirect3D9
 
   IDirect3DDevice9* {.importcpp: "IDirect3DDevice9", d3d9_header, inheritable, pure.} = object
     #*** IUnknown methods ***/
-    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
-    AddRef*: proc (): ULONG {.stdcall.}
-    Release*: proc (): ULONG {.stdcall.}
+    QueryInterface*: proc (riid: pointer, ppvObj: ptr pointer): int32 {.stdcall.}
+    AddRef*: proc (): int32 {.stdcall.}
+    Release*: proc (): void {.stdcall.}
 
     # IDirect3DDevice9 methods ***/
-    TestCooperativeLevel*: proc(): HRESULT {.stdcall.}
-    GetAvailableTextureMem*: proc(): uint {.stdcall.}
-    EvictManagedResources*: proc(): HRESULT {.stdcall.}
-    GetDirect3D*: proc(ppD3D9: ptr ptr IDirect3D9): HRESULT {.stdcall.}
-    GetDeviceCaps*: proc(pCaps: ptr D3DCAPS9): HRESULT {.stdcall.}
-    GetDisplayMode*: proc(iSwapChain: uint, pMode: ptr D3DDISPLAYMODE): HRESULT {.stdcall.}
-    GetCreationParameters*: proc(pParameters: ptr D3DDEVICE_CREATION_PARAMETERS): HRESULT {.stdcall.}
-    SetCursorProperties*: proc(XHotSpot: uint, YHotSpot: uint, pCursorBitmap: ptr IDirect3DSurface9): HRESULT {.stdcall.}
-    SetCursorPosition*: proc(X: int,Y: int, Flags: DWORD): void {.stdcall.}
+    TestCooperativeLevel*: proc(): int32 {.stdcall.}
+    GetAvailableTextureMem*: proc(): int32 {.stdcall.}
+    EvictManagedResources*: proc(): int32 {.stdcall.}
+    GetDirect3D*: proc(ppD3D9: ptr ptr IDirect3D9): int32 {.stdcall.}
+    GetDeviceCaps*: proc(pCaps: ptr D3DCAPS9): int32 {.stdcall.}
+    GetDisplayMode*: proc(iSwapChain: int32, pMode: ptr D3DDISPLAYMODE): int32 {.stdcall.}
+    GetCreationParameters*: proc(pParameters: ptr D3DDEVICE_CREATION_PARAMETERS): int32 {.stdcall.}
+    SetCursorProperties*: proc(XHotSpot: int32, YHotSpot: int32, pCursorBitmap: ptr IDirect3DSurface9): int32 {.stdcall.}
+    SetCursorPosition*: proc(X: int,Y: int, Flags: int32): void {.stdcall.}
     ShowCursor*: proc(bShow: bool): bool {.stdcall.}
-    Clear*: proc(Count: DWORD, pRects: ptr D3DRECT, Flags: DWORD, Color: DWORD, Z: float, Stencil: DWORD): HRESULT {.stdcall.}
-    BeginScene*: proc(): HRESULT {.stdcall.}
-    EndScene*: proc(): HRESULT {.stdcall.}
-    Present*: proc(pSourceRect: ptr RECTT, pDestRect: ptr RECTT, hDestWindowOverride: HWND, pDirtyRegion: ptr RGNDATA): HRESULT {.stdcall.}
-    Reset*: proc(pPresentationParameters: ptr D3DPRESENT_PARAMETERS): HRESULT {.stdcall.}
-    SetVertexShader*: proc(pShader: ptr IDirect3DVertexShader9): HRESULT {.stdcall.}
-    GetVertexShader*: proc(pShader: ptr ptr IDirect3DVertexShader9): HRESULT {.stdcall.}
-    SetViewport*: proc(pViewport: ptr D3DVIEWPORT9): HRESULT {.stdcall.}
-    SetPixelShader*: proc(pShader: ptr IDirect3DPixelShader9): HRESULT {.stdcall.}
-    GetPixelShader*: proc(ppShader: ptr ptr IDirect3DPixelShader9): HRESULT {.stdcall.}
-    SetRenderState*: proc(State: D3DRENDERSTATETYPE, Value: DWORD): HRESULT {.stdcall.}
-    GetRenderState*: proc(State: D3DRENDERSTATETYPE, pValue: ptr DWORD): HRESULT {.stdcall.}
-    GetTextureStageState*: proc(Stage: DWORD, Type: D3DTEXTURESTAGESTATETYPE, pValue: ptr DWORD): HRESULT {.stdcall.}
-    SetTextureStageState*: proc(Stage: DWORD, Type: D3DTEXTURESTAGESTATETYPE, Value: DWORD): HRESULT {.stdcall.}
-    GetSamplerState*: proc(Sampler: DWORD, Type: D3DSAMPLERSTATETYPE, pValue: ptr DWORD): HRESULT {.stdcall.}
-    SetSamplerState*: proc(Sampler: DWORD, Type: D3DSAMPLERSTATETYPE, Value: DWORD): HRESULT {.stdcall.}
-    ValidateDevice*: proc(pNumPasses: ptr DWORD): HRESULT {.stdcall.}
-    CreateVertexBuffer*: proc(Length: UINT, Usage: DWORD, FVF: DWORD, Pool: D3DPOOL, ppVertexBuffer: ptr ptr IDirect3DVertexBuffer9, pSharedHandle: ptr HANDLE): HRESULT {.stdcall.}
-    CreateIndexBuffer*: proc(Length: UINT, Usage: DWORD, Format: D3DFORMAT, Pool: D3DPOOL, ppIndexBuffer: ptr ptr IDirect3DIndexBuffer9, pSharedHandle: ptr HANDLE): HRESULT {.stdcall.}
-    CreateStateBlock*: proc(Type: D3DSTATEBLOCKTYPE, ppSB: ptr ptr IDirect3DStateBlock9): HRESULT {.stdcall.}
-    SetStreamSource*: proc(StreamNumber: UINT, pStreamData: ptr IDirect3DVertexBuffer9, OffsetInBytes: UINT, Stride: UINT): HRESULT {.stdcall.}
-    SetFVF*: proc(FVF: DWORD): HRESULT {.stdcall.}
-    SetIndices*: proc(pIndexData: ptr IDirect3DIndexBuffer9): HRESULT {.stdcall.}
-    GetIndices*: proc(ppIndexData: ptr ptr IDirect3DIndexBuffer9): HRESULT {.stdcall.}
-    CreateTexture*: proc(Width: UINT, Height: UINT, Levels: UINT, Usage: DWORD, Format: D3DFORMAT, Pool: D3DPOOL, ppTexture: ptr ptr IDirect3DTexture9, pSharedHandle: ptr HANDLE): HRESULT {.stdcall.}
+    Clear*: proc(Count: int32, pRects: ptr D3DRECT, Flags: int32, Color: int32, Z: float, Stencil: int32): void {.stdcall.}
+    BeginScene*: proc(): void {.stdcall.}
+    EndScene*: proc(): void {.stdcall.}
+    Present*: proc(pSourceRect: pointer, pDestRect: pointer, hDestWindowOverride: int, pDirtyRegion: ptr RGNDATA): void {.stdcall.}
+    Reset*: proc(pPresentationParameters: ptr D3DPRESENT_PARAMETERS): int32 {.stdcall.}
+    SetVertexShader*: proc(pShader: ptr IDirect3DVertexShader9): int32 {.stdcall.}
+    GetVertexShader*: proc(pShader: ptr ptr IDirect3DVertexShader9): int32 {.stdcall.}
+    SetViewport*: proc(pViewport: ptr D3DVIEWPORT9): int32 {.stdcall.}
+    SetPixelShader*: proc(pShader: ptr IDirect3DPixelShader9): int32 {.stdcall.}
+    GetPixelShader*: proc(ppShader: ptr ptr IDirect3DPixelShader9): int32 {.stdcall.}
+    SetRenderState*: proc(State: D3DRENDERSTATETYPE, Value: int32): int32 {.stdcall.}
+    GetRenderState*: proc(State: D3DRENDERSTATETYPE, pValue: ptr int32): int32 {.stdcall.}
+    GetTextureStageState*: proc(Stage: int32, Type: D3DTEXTURESTAGESTATETYPE, pValue: ptr int32): int32 {.stdcall.}
+    SetTextureStageState*: proc(Stage: int32, Type: D3DTEXTURESTAGESTATETYPE, Value: int32): int32 {.stdcall.}
+    GetSamplerState*: proc(Sampler: int32, Type: D3DSAMPLERSTATETYPE, pValue: ptr int32): int32 {.stdcall.}
+    SetSamplerState*: proc(Sampler: int32, Type: D3DSAMPLERSTATETYPE, Value: int32): int32 {.stdcall.}
+    ValidateDevice*: proc(pNumPasses: ptr int32): int32 {.stdcall.}
+    CreateVertexBuffer*: proc(Length: int32, Usage: int32, FVF: int32, Pool: D3DPOOL, ppVertexBuffer: ptr ptr IDirect3DVertexBuffer9, pSharedHandle: ptr int): int32 {.stdcall.}
+    CreateIndexBuffer*: proc(Length: int32, Usage: int32, Format: D3DFORMAT, Pool: D3DPOOL, ppIndexBuffer: ptr ptr IDirect3DIndexBuffer9, pSharedHandle: ptr int): int32 {.stdcall.}
+    CreateStateBlock*: proc(Type: D3DSTATEBLOCKTYPE, ppSB: ptr ptr IDirect3DStateBlock9): int32 {.stdcall.}
+    SetStreamSource*: proc(StreamNumber: int32, pStreamData: ptr IDirect3DVertexBuffer9, OffsetInBytes: int32, Stride: int32): int32 {.stdcall.}
+    SetFVF*: proc(FVF: int32): int32 {.stdcall.}
+    SetIndices*: proc(pIndexData: ptr IDirect3DIndexBuffer9): int32 {.stdcall.}
+    GetIndices*: proc(ppIndexData: ptr ptr IDirect3DIndexBuffer9): int32 {.stdcall.}
+    CreateTexture*: proc(Width: int32, Height: int32, Levels: int32, Usage: int32, Format: D3DFORMAT, Pool: D3DPOOL, ppTexture: ptr ptr IDirect3DTexture9, pSharedHandle: ptr int): int32 {.stdcall.}
 
-    # SetTransform*: proc(State: D3DTRANSFORMSTATETYPE, pMatrix: ptr D3DMATRIX): HRESULT {.stdcall.}
-    # GetTransform*: proc(State: D3DTRANSFORMSTATETYPE, pMatrix: ptr D3DMATRIX): HRESULT {.stdcall.}
+    # SetTransform*: proc(State: D3DTRANSFORMSTATETYPE, pMatrix: ptr D3DMATRIX): int32 {.stdcall.}
+    # GetTransform*: proc(State: D3DTRANSFORMSTATETYPE, pMatrix: ptr D3DMATRIX): int32 {.stdcall.}
   LPDIRECT3DDEVICE9* {.importcpp: "LPDIRECT3DDEVICE9", d3d9_header.} = ptr IDirect3DDevice9
   PDIRECT3DDEVICE9* {.importcpp: "PDIRECT3DDEVICE9", d3d9_header.} = ptr IDirect3DDevice9
 
   IDirect3DStateBlock9* {.importcpp: "IDirect3DStateBlock9",  d3d9_header, inheritable, pure.} = object
     #*** IUnknown methods ***/
-    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
-    AddRef*: proc (): ULONG {.stdcall.}
-    Release*: proc (): ULONG {.stdcall.}
+    QueryInterface*: proc (riid: pointer, ppvObj: ptr pointer): int32 {.stdcall.}
+    AddRef*: proc (): int32 {.stdcall.}
+    Release*: proc (): void {.stdcall.}
 
     #*** IDirect3DStateBlock9 methods ***#
-    GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
-    Capture*: proc(): HRESULT {.stdcall.}
-    Apply*: proc(): HRESULT {.stdcall.}
+    GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): int32 {.stdcall.}
+    Capture*: proc(): int32 {.stdcall.}
+    Apply*: proc(): int32 {.stdcall.}
   LPDIRECT3DSTATEBLOCK9* {.importcpp: "LPDIRECT3DSTATEBLOCK9",  d3d9_header.} = ptr IDirect3DStateBlock9
   PDIRECT3DSTATEBLOCK9* {.importcpp: "PDIRECT3DSTATEBLOCK9",  d3d9_header.} = ptr IDirect3DStateBlock9
 
   IDirect3DVertexDeclaration9* {.importcpp: "IDirect3DVertexDeclaration9",  d3d9_header, inheritable, pure.} = object
     #*** IUnknown methods ***/
-    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
-    AddRef*: proc (): ULONG {.stdcall.}
-    Release*: proc (): ULONG {.stdcall.}
+    QueryInterface*: proc (riid: pointer, ppvObj: ptr pointer): int32 {.stdcall.}
+    AddRef*: proc (): int32 {.stdcall.}
+    Release*: proc (): void {.stdcall.}
 
     #*** IDirect3DVertexDeclaration9 methods ***#
-    GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
+    GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): int32 {.stdcall.}
   LPDIRECT3DVERTEXDECLARATION9* {.importcpp: "LPDIRECT3DVERTEXDECLARATION9",  d3d9_header.} = ptr IDirect3DVertexDeclaration9
   PDIRECT3DVERTEXDECLARATION9* {.importcpp: "PDIRECT3DVERTEXDECLARATION9",  d3d9_header.} = ptr IDirect3DVertexDeclaration9
 
   IDirect3DVertexShader9* {.importcpp: "IDirect3DVertexShader9",  d3d9_header, inheritable, pure.} = object
     #*** IUnknown methods ***/
-    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
-    AddRef*: proc (): ULONG {.stdcall.}
-    Release*: proc (): ULONG {.stdcall.}
+    QueryInterface*: proc (riid: pointer, ppvObj: ptr pointer): int32 {.stdcall.}
+    AddRef*: proc (): int32 {.stdcall.}
+    Release*: proc (): void {.stdcall.}
 
     #*** IDirect3DVertexShader9 methods ***#
-    GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
+    GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): int32 {.stdcall.}
   LPDIRECT3DVERTEXSHADER9* {.importcpp: "LPDIRECT3DVERTEXSHADER9",  d3d9_header.} = ptr IDirect3DVertexShader9
   PDIRECT3DVERTEXSHADER9* {.importcpp: "PDIRECT3DVERTEXSHADER9",  d3d9_header.} = ptr IDirect3DVertexShader9
 
   IDirect3DPixelShader9* {.importcpp: "IDirect3DPixelShader9", d3d9_header, inheritable, pure.} = object
     #*** IUnknown methods ***/
-    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
-    AddRef*: proc (): ULONG {.stdcall.}
-    Release*: proc (): ULONG {.stdcall.}
+    QueryInterface*: proc (riid: pointer, ppvObj: ptr pointer): int32 {.stdcall.}
+    AddRef*: proc (): int32 {.stdcall.}
+    Release*: proc (): void {.stdcall.}
 
     #*** IDirect3DPixelShader9 methods ***#
-    GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
+    GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): int32 {.stdcall.}
   LPDIRECT3DPIXELSHADER9* {.importcpp: "LPDIRECT3DPIXELSHADER9", d3d9_header.} = ptr IDirect3DPixelShader9
   PDIRECT3DPIXELSHADER9* {.importcpp: "PDIRECT3DPIXELSHADER9", d3d9_header.} = ptr IDirect3DPixelShader9
 
 
   IDirect3DVertexBuffer9* {.importcpp: "IDirect3DVertexBuffer9", d3d9_header, inheritable, pure.} = object
     #*** IUnknown methods ***/
-    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
-    AddRef*: proc (): ULONG {.stdcall.}
-    Release*: proc (): ULONG {.stdcall.}
+    QueryInterface*: proc (riid: pointer, ppvObj: ptr pointer): int32 {.stdcall.}
+    AddRef*: proc (): int32 {.stdcall.}
+    Release*: proc (): void {.stdcall.}
 
     #*** IDirect3DVertexBuffer9 methods ***/
-    GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
-    SetPriority*: proc(PriorityNew: DWORD): DWORD {.stdcall.}
-    GetPriority*: proc(): DWORD {.stdcall.}
+    GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): int32 {.stdcall.}
+    SetPriority*: proc(PriorityNew: int32): int32 {.stdcall.}
+    GetPriority*: proc(): int32 {.stdcall.}
     PreLoad*: proc(): void {.stdcall.}
     GetType*: proc(): D3DRESOURCETYPE {.stdcall.}
-    Lock*: proc(OffsetToLock: UINT, SizeToLock: UINT, ppbData: ptr pointer, Flags: DWORD): HRESULT {.stdcall.}
-    Unlock*: proc(): HRESULT {.stdcall.}
-    GetDesc*: proc(pDesc: ptr D3DVERTEXBUFFER_DESC): HRESULT {.stdcall.}
+    Lock*: proc(OffsetToLock: int32, SizeToLock: int32, ppbData: ptr pointer, Flags: int32): int32 {.stdcall.}
+    Unlock*: proc(): int32 {.stdcall.}
+    GetDesc*: proc(pDesc: ptr D3DVERTEXBUFFER_DESC): int32 {.stdcall.}
   LPDIRECT3DVERTEXBUFFER9* {.importcpp: "LPDIRECT3DVERTEXBUFFER9", d3d9_header.} = ptr IDirect3DVertexBuffer9
   PDIRECT3DVERTEXBUFFER9* {.importcpp: "PDIRECT3DVERTEXBUFFER9", d3d9_header.} = ptr IDirect3DVertexBuffer9
 
 
   IDirect3DIndexBuffer9* {.importcpp: "IDirect3DIndexBuffer9", d3d9_header, inheritable, pure.} = object
     #*** IUnknown methods ***/
-    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
-    AddRef*: proc (): ULONG {.stdcall.}
-    Release*: proc (): ULONG {.stdcall.}
+    QueryInterface*: proc (riid: pointer, ppvObj: ptr pointer): int32 {.stdcall.}
+    AddRef*: proc (): int32 {.stdcall.}
+    Release*: proc (): void {.stdcall.}
 
     #*** IDirect3DIndexBuffer9 methods ***/
-    GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
-    SetPriority*: proc(PriorityNew: DWORD): DWORD {.stdcall.}
-    GetPriority*: proc(): DWORD {.stdcall.}
+    GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): int32 {.stdcall.}
+    SetPriority*: proc(PriorityNew: int32): int32 {.stdcall.}
+    GetPriority*: proc(): int32 {.stdcall.}
     PreLoad*: proc(): void {.stdcall.}
     GetType*: proc(): D3DRESOURCETYPE {.stdcall.}
-    Lock*: proc(OffsetToLock: UINT, SizeToLock: UINT, ppbData: ptr pointer, Flags: DWORD): HRESULT {.stdcall.}
-    Unlock*: proc(): HRESULT {.stdcall.}
-    GetDesc*: proc(pDesc: ptr D3DVERTEXBUFFER_DESC): HRESULT {.stdcall.}
+    Lock*: proc(OffsetToLock: int32, SizeToLock: int32, ppbData: ptr pointer, Flags: int32): int32 {.stdcall.}
+    Unlock*: proc(): int32 {.stdcall.}
+    GetDesc*: proc(pDesc: ptr D3DVERTEXBUFFER_DESC): int32 {.stdcall.}
   LPDIRECT3DINDEXBUFFER9* {.importcpp: "LPDIRECT3DINDEXBUFFER9", d3d9_header.} = ptr IDirect3DIndexBuffer9
   PDIRECT3DINDEXBUFFER9* {.importcpp: "PDIRECT3DINDEXBUFFER9", d3d9_header.} = ptr IDirect3DIndexBuffer9
 
   IDirect3DBaseTexture9* {.importcpp: "IDirect3DBaseTexture9",  d3d9_header, inheritable, pure.} = object
   IDirect3DTexture9* {.importcpp: "IDirect3DTexture9",  d3d9_header, inheritable, pure.} = object of IDirect3DBaseTexture9
     #*** IUnknown methods ***/
-    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
-    AddRef*: proc (): ULONG {.stdcall.}
-    Release*: proc (): ULONG {.stdcall.}
+    QueryInterface*: proc (riid: pointer, ppvObj: ptr pointer): int32 {.stdcall.}
+    AddRef*: proc (): int32 {.stdcall.}
+    Release*: proc (): void {.stdcall.}
 
     #*** IDirect3DTexture9 methods ***/
-    SetPriority*: proc(PriorityNew: DWORD): DWORD {.stdcall.}
-    GetPriority*: proc(): DWORD {.stdcall.}
+    SetPriority*: proc(PriorityNew: int32): int32 {.stdcall.}
+    GetPriority*: proc(): int32 {.stdcall.}
     PreLoad*: proc(): void {.stdcall.}
     GetType*: proc(): D3DRESOURCETYPE {.stdcall.}
-    SetLOD*: proc(LODNew: DWORD): DWORD {.stdcall.}
-    GetLOD*: proc(): DWORD {.stdcall.}
-    GetLevelCount*: proc(): DWORD {.stdcall.}
-    SetAutoGenFilterType*: proc(FilterType: D3DTEXTUREFILTERTYPE): HRESULT {.stdcall.}
+    SetLOD*: proc(LODNew: int32): int32 {.stdcall.}
+    GetLOD*: proc(): int32 {.stdcall.}
+    GetLevelCount*: proc(): int32 {.stdcall.}
+    SetAutoGenFilterType*: proc(FilterType: D3DTEXTUREFILTERTYPE): int32 {.stdcall.}
     GetAutoGenFilterType*: proc(): D3DTEXTUREFILTERTYPE {.stdcall.}
     GenerateMipSubLevels*: proc(): void {.stdcall.}
-    GetLevelDesc*: proc(Level: UINT, pDesc: ptr D3DSURFACE_DESC): HRESULT {.stdcall.}
-    GetSurfaceLevel*: proc(Level: UINT, ppSurfaceLevel: ptr ptr IDirect3DSurface9): HRESULT {.stdcall.}
-    LockRect*: proc(Level: UINT, pLockedRect: ptr D3DLOCKED_RECT, pRect: pointer, Flags: DWORD): HRESULT {.stdcall.}
-    UnlockRect*: proc(Level: UINT): HRESULT {.stdcall.}
-    AddDirtyRect*: proc(pDirtyRect: ptr RECTT): HRESULT {.stdcall.}
+    GetLevelDesc*: proc(Level: int32, pDesc: ptr D3DSURFACE_DESC): int32 {.stdcall.}
+    GetSurfaceLevel*: proc(Level: int32, ppSurfaceLevel: ptr ptr IDirect3DSurface9): int32 {.stdcall.}
+    LockRect*: proc(Level: int32, pLockedRect: ptr D3DLOCKED_RECT, pRect: pointer, Flags: int32): int32 {.stdcall.}
+    UnlockRect*: proc(Level: int32): int32 {.stdcall.}
+    AddDirtyRect*: proc(pDirtyRect: pointer): int32 {.stdcall.}
   LPDIRECT3DTEXTURE9* {.importcpp: "LPDIRECT3DTEXTURE9", d3d9_header.} = ptr IDirect3DTexture9
   PDIRECT3DTEXTURE9* {.importcpp: "PDIRECT3DTEXTURE9", d3d9_header.} = ptr IDirect3DTexture9 
 
   ID3DXLine* {.importcpp: "ID3DXLine",  d3dx9core_header, inheritable, pure.} = object
-    GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): HRESULT {.stdcall.}
-    Begin*: proc(): HRESULT {.stdcall.}
-    Draw*: proc(pVertexList: ptr D3DXVECTOR2, dwVertexListCount: DWORD, color: DWORD): HRESULT {.stdcall.}
-    SetPattern*: proc(dwPattern: DWORD): HRESULT {.stdcall.}
-    GetPattern*: proc(): DWORD {.stdcall.}
-    SetPatternScale*: proc(fPatternScale: float): HRESULT {.stdcall.}
+    GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): int32 {.stdcall.}
+    Begin*: proc(): int32 {.stdcall.}
+    Draw*: proc(pVertexList: ptr D3DXVECTOR2, dwVertexListCount: int32, color: int32): int32 {.stdcall.}
+    SetPattern*: proc(dwPattern: int32): int32 {.stdcall.}
+    GetPattern*: proc(): int32 {.stdcall.}
+    SetPatternScale*: proc(fPatternScale: float): int32 {.stdcall.}
     GetPatternScale*: proc(): float {.stdcall.}
-    SetWidth*: proc(fWidth: float): HRESULT {.stdcall.}
+    SetWidth*: proc(fWidth: float): int32 {.stdcall.}
     GetWidth*: proc(): float {.stdcall.}
-    SetAntialias*: proc(bAntialias: bool): HRESULT {.stdcall.}
+    SetAntialias*: proc(bAntialias: bool): int32 {.stdcall.}
     GetAntialias*: proc(): bool {.stdcall.}
-    SetGLLines: proc(bGLLines: bool): HRESULT {.stdcall.}
+    SetGLLines: proc(bGLLines: bool): int32 {.stdcall.}
     GetGLLines*: proc(): bool {.stdcall.}
-    End*: proc(): HRESULT {.stdcall.}
-    OnLostDevice*: proc(): HRESULT {.stdcall.}
-    OnResetDevice*: proc(): HRESULT {.stdcall.}
+    End*: proc(): int32 {.stdcall.}
+    OnLostDevice*: proc(): int32 {.stdcall.}
+    OnResetDevice*: proc(): int32 {.stdcall.}
   LPD3DXLINE* {.importcpp: "LPD3DXLINE", d3dx9core_header.} = ptr ID3DXLine
 
   ID3DXSprite* {.importcpp: "ID3DXSprite",  d3dx9core_header, inheritable, pure.} = object
-    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
-    AddRef*: proc (): ULONG {.stdcall.}
-    Release*: proc (): ULONG {.stdcall.}
-    Begin*: proc(): HRESULT {.stdcall.}
+    QueryInterface*: proc (riid: pointer, ppvObj: ptr pointer): int32 {.stdcall.}
+    AddRef*: proc (): int32 {.stdcall.}
+    Release*: proc (): void {.stdcall.}
+    Begin*: proc(): int32 {.stdcall.}
     # STDMETHOD(Draw)(THIS_ LPDIRECT3DTEXTURE9 pTexture, CONST RECT *pSrcRect, CONST D3DXVECTOR3 *pCenter, CONST D3DXVECTOR3 *pPosition, D3DCOLOR Color) PURE;
-    Flush*: proc(): HRESULT {.stdcall.}
-    End*: proc(): HRESULT {.stdcall.}
+    Flush*: proc(): int32 {.stdcall.}
+    End*: proc(): int32 {.stdcall.}
     OnLostDevice*: proc(): int32 {.stdcall.}
     OnResetDevice*: proc(): int32 {.stdcall.}
   LPD3DXSPRITE* {.importcpp: "LPD3DXSPRITE", d3dx9core_header.} = ptr ID3DXSprite
 
   ID3DXFont* {.importcpp: "ID3DXFont",  d3dx9core_header, inheritable, pure.} = object
-    QueryInterface*: proc (riid: REFIID, ppvObj: ptr pointer): HRESULT {.stdcall.}
-    AddRef*: proc (): ULONG {.stdcall.}
-    Release*: proc (): ULONG {.stdcall.}
+    QueryInterface*: proc (riid: pointer, ppvObj: ptr pointer): int32 {.stdcall.}
+    AddRef*: proc (): int32 {.stdcall.}
+    Release*: proc (): void {.stdcall.}
     GetDevice*: proc(ppDevice: ptr ptr IDirect3DDevice9): int32 {.stdcall.}
-    DrawTextW*: proc (pSprite: LPD3DXSPRITE, pString: LPCWSTR, count: int32, pRect: pointer, Format: uint, color: int32): int32 {.stdcall.}
+    DrawTextW*: proc (pSprite: LPD3DXSPRITE, pString: ptr uint16, count: int32, pRect: pointer, Format: int32, color: int32): void {.stdcall.}
 
     OnLostDevice*: proc(): int32 {.stdcall.}
     OnResetDevice*: proc(): int32 {.stdcall.}
   LPD3DXFONT* {.importcpp: "LPD3DXFONT", d3dx9core_header.} = ptr ID3DXFont
 
-proc D3DXCreateLine*(pDevice: LPDIRECT3DDEVICE9, ppLine: ptr LPD3DXLINE): HRESULT {.importcpp: "D3DXCreateLine(@, @)",  d3dx9core_header, stdcall, discardable.}
-proc D3DXCreateFont*(pDevice: LPDIRECT3DDEVICE9, height: int, width: uint, weight: uint, mipLevel: uint, intalic: bool, charset: DWORD, outputPrecision: DWORD, quality: DWORD, pitchAndFamily: DWORD, pFaceName: LPCWSTR, ppFont: ptr LPD3DXFONT): HRESULT {.importcpp: "D3DXCreateFontW(@)", d3dx9core_header, stdcall, discardable.}
-func Direct3DCreate9*(SDKVersion: uint): ptr IDirect3D9 {.importcpp: "Direct3DCreate9(@)", d3d9_header, stdcall.}
-func D3DCOLOR_ARGB*(a: int, r: int, g: int, b: int): DWORD = 
-  return (cast[int32](((((a) and 0xff) shl 24) or (((r) and 0xff) shl 16) or (((g) and 0xff) shl 8) or ((b) and 0xff))))
+proc D3DXCreateLine*(pDevice: LPDIRECT3DDEVICE9, ppLine: ptr LPD3DXLINE): int32 {.importcpp: "D3DXCreateLine(@, @)",  d3dx9core_header, stdcall, discardable.}
+proc D3DXCreateFont*(pDevice: LPDIRECT3DDEVICE9, height: int, width: int32, weight: int32, mipLevel: int32, intalic: bool, charset: int32, outputPrecision: int32, quality: int32, pitchAndFamily: int32, pFaceName: ptr uint16, ppFont: ptr LPD3DXFONT): int32 {.importcpp: "D3DXCreateFontW(@)", d3dx9core_header, stdcall, discardable.}
+proc Direct3DCreate9*(SDKVersion: int32): ptr IDirect3D9 {.importcpp: "Direct3DCreate9(@)", d3d9_header, stdcall.}
+proc D3DCOLOR_ARGB*(a: int, r: int, g: int, b: int): int32 = (cast[int32](((((a) and 0xff) shl 24) or (((r) and 0xff) shl 16) or (((g) and 0xff) shl 8) or ((b) and 0xff))))
 
-func D3DCOLOR_RGBA*(r: int, g: int, b: int, a: int): DWORD = D3DCOLOR_ARGB(a, r, g, b)
-func D3DCOLOR_XRGB*(r: int, g: int, b: int): DWORD = D3DCOLOR_ARGB(0xff, r, g, b) 
-func D3DCOLOR_XYUV*(y: int, u: int, v: int): DWORD = D3DCOLOR_ARGB(0xff, y, u, v)
-func D3DCOLOR_AYUV*(a: int, y: int, u: int, v: int): DWORD = D3DCOLOR_ARGB(a, y, u, v)
+proc D3DCOLOR_RGBA*(r: int, g: int, b: int, a: int): int32 = D3DCOLOR_ARGB(a, r, g, b)
+proc D3DCOLOR_XRGB*(r: int, g: int, b: int): int32 = D3DCOLOR_ARGB(0xff, r, g, b) 
+proc D3DCOLOR_XYUV*(y: int, u: int, v: int): int32 = D3DCOLOR_ARGB(0xff, y, u, v)
+proc D3DCOLOR_AYUV*(a: int, y: int, u: int, v: int): int32 = D3DCOLOR_ARGB(a, y, u, v)
