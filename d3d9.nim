@@ -1,10 +1,12 @@
-import os, strutils, winim/lean
+import os, strutils
+import winim/lean
 
-static:
-  if not existsEnv("DXSDK_DIR"):
-    doAssert false, "DXSDK_DIR is missing at compile-time. Set it to your DirectX SDK (June 2010) folder."
 
 const dxPath* = (if existsEnv("DXSDK_DIR"): getEnv("DXSDK_DIR").replace("\\", "/") else: "")
+
+static:
+  if dxPath.len == 0:
+    {.warning: "DXSDK_DIR is not set at compile time.".}
 
 when dxPath.len != 0:
   const dxInclude = "-I\"" & dxPath & "/Include\""
@@ -22,19 +24,34 @@ when dxPath.len != 0:
 {.pragma: d3dx9mathh, header: "d3dx9math.h".}
 
 const
-  D3D_SDK_VERSION* = 32'u32
-  D3DADAPTER_DEFAULT* = 0'u32
-  D3DCREATE_SOFTWARE_VERTEXPROCESSING* = 0x00000020'u32
-  D3DCLEAR_TARGET* = 0x00000001'u32
+  D3D_SDK_VERSION* = 32'i32
+  D3D_OK* = 0'i32
+  D3DADAPTER_DEFAULT* = 0'i32
+  D3DCREATE_SOFTWARE_VERTEXPROCESSING* = 0x00000020'i32
+  D3DCLEAR_TARGET* = 0x00000001'i32
 
-  D3DFVF_XYZRHW* = 0x004'u32
-  D3DFVF_DIFFUSE* = 0x040'u32
-  D3DFVF_TEX1* = 0x100'u32
+  D3DCLEAR_ZBUFFER* = 0x00000002'i32
+  D3DCLEAR_STENCIL* = 0x00000004'i32
 
-  D3DTA_SELECTMASK* = 0x0000000F'u32
-  D3DTA_DIFFUSE* = 0x00000000'u32
-  D3DTA_CURRENT* = 0x00000001'u32
-  D3DTA_TEXTURE* = 0x00000002'u32
+  D3DFVF_XYZ* = 0x002'i32
+  D3DFVF_XYZRHW* = 0x004'i32
+  D3DFVF_DIFFUSE* = 0x040'i32
+  D3DFVF_TEX1* = 0x100'i32
+
+  D3DTA_SELECTMASK* = 0x0000000F'i32
+  D3DTA_DIFFUSE* = 0x00000000'i32
+  D3DTA_CURRENT* = 0x00000001'i32
+  D3DTA_TEXTURE* = 0x00000002'i32
+
+  D3DUSAGE_DYNAMIC* = 0x00000200'i32
+  D3DUSAGE_WRITEONLY* = 0x00000008'i32
+  D3DUSAGE_QUERY_FILTER* = 0x00020000'i32
+  D3DUSAGE_QUERY_POSTPIXELSHADER_BLENDING* = 0x00080000'i32
+
+  D3DLOCK_DISCARD* = 0x00002000'i32
+  D3DERR_DEVICELOST* = 0x88760868'i32
+  D3DERR_DEVICENOTRESET* = 0x88760869'i32
+
 
 type
   D3DDEVTYPE* {.importcpp: "D3DDEVTYPE", d3d9h, size: 4.} = enum
@@ -62,7 +79,7 @@ type
     D3DPOOL_MANAGED   = 1
     D3DPOOL_SYSTEMMEM = 2
     D3DPOOL_SCRATCH   = 3
-  
+
   D3DRESOURCETYPE* {.importcpp: "D3DRESOURCETYPE", d3d9h, size: 4.} = enum
     D3DRTYPE_SURFACE      = 1
     D3DRTYPE_VOLUME       = 2
@@ -83,7 +100,25 @@ type
 
   D3DRENDERSTATETYPE* {.importcpp: "D3DRENDERSTATETYPE", d3d9h, size: 4.} = enum
     D3DRS_ZENABLE = 7
+    D3DRS_FILLMODE = 8
+    D3DRS_SHADEMODE = 9
+    D3DRS_ZWRITEENABLE = 14
+    D3DRS_ALPHATESTENABLE = 15
+    D3DRS_SRCBLEND = 19
+    D3DRS_DESTBLEND = 20
+    D3DRS_CULLMODE = 22
+    D3DRS_ALPHABLENDENABLE = 27
+    D3DRS_FOGENABLE = 28
+    D3DRS_SPECULARENABLE = 29
+    D3DRS_SCISSORTESTENABLE = 174
+    D3DRS_STENCILENABLE = 52
+    D3DRS_CLIPPING = 136
     D3DRS_LIGHTING = 137
+    D3DRS_RANGEFOGENABLE = 48
+    D3DRS_BLENDOP = 171
+    D3DRS_SEPARATEALPHABLENDENABLE = 206
+    D3DRS_SRCBLENDALPHA = 207
+    D3DRS_DESTBLENDALPHA = 208
 
   D3DTEXTURESTAGESTATETYPE* {.importcpp: "D3DTEXTURESTAGESTATETYPE", d3d9h, size: 4.} = enum
     D3DTSS_COLOROP = 1
@@ -116,7 +151,46 @@ type
     D3DTADDRESS_MIRROR = 2
     D3DTADDRESS_CLAMP = 3
 
+  D3DFILLMODE* {.importcpp: "D3DFILLMODE", d3d9h, size: 4.} = enum
+    D3DFILL_POINT = 1
+    D3DFILL_WIREFRAME = 2
+    D3DFILL_SOLID = 3
+
+  D3DSHADEMODE* {.importcpp: "D3DSHADEMODE", d3d9h, size: 4.} = enum
+    D3DSHADE_FLAT = 1
+    D3DSHADE_GOURAUD = 2
+
+  D3DCULL* {.importcpp: "D3DCULL", d3d9h, size: 4.} = enum
+    D3DCULL_NONE = 1
+    D3DCULL_CW = 2
+    D3DCULL_CCW = 3
+
+  D3DBLEND* {.importcpp: "D3DBLEND", d3d9h, size: 4.} = enum
+    D3DBLEND_ZERO = 1
+    D3DBLEND_ONE = 2
+    D3DBLEND_SRCCOLOR = 3
+    D3DBLEND_INVSRCCOLOR = 4
+    D3DBLEND_SRCALPHA = 5
+    D3DBLEND_INVSRCALPHA = 6
+
+  D3DBLENDOP* {.importcpp: "D3DBLENDOP", d3d9h, size: 4.} = enum
+    D3DBLENDOP_ADD = 1
+
+  D3DTRANSFORMSTATETYPE* {.importcpp: "D3DTRANSFORMSTATETYPE", d3d9h, size: 4.} = enum
+    D3DTS_VIEW = 2
+    D3DTS_PROJECTION = 3
+    D3DTS_WORLD = 256
+
+  D3DSTATEBLOCKTYPE* {.importcpp: "D3DSTATEBLOCKTYPE", d3d9h, size: 4.} = enum
+    D3DSBT_ALL = 1
+
 type
+  DXRECT* {.importcpp: "RECT", header: "windows.h", bycopy.} = object
+    left*: LONG
+    top*: LONG
+    right*: LONG
+    bottom*: LONG
+    
   D3DRECT* {.importcpp: "D3DRECT", d3d9h, bycopy, pure.} = object
     x1*, y1*, x2*, y2*: int32
 
@@ -145,6 +219,9 @@ type
     Width*, Height*: uint32
     MinZ*, MaxZ*: FLOAT
 
+  D3DMATRIX* {.importcpp: "D3DMATRIX", d3d9h, bycopy, pure.} = object
+    m*: array[4, array[4, float32]]
+
   D3DPRESENT_PARAMETERS* {.importcpp: "D3DPRESENT_PARAMETERS", d3d9h, bycopy, pure.} = object
     BackBufferWidth*: UINT
     BackBufferHeight*: UINT
@@ -161,7 +238,6 @@ type
     FullScreen_RefreshRateInHz*: UINT
     PresentationInterval*: UINT
 
-  
 
 type
   IDirect3D9* {.importcpp: "IDirect3D9", d3d9h, pure.} = object
@@ -172,10 +248,11 @@ type
   IDirect3DIndexBuffer9* {.importcpp: "IDirect3DIndexBuffer9", d3d9h, pure.} = object
   IDirect3DBaseTexture9* {.importcpp: "IDirect3DBaseTexture9", d3d9h, pure.} = object
   IDirect3DTexture9* {.importcpp: "IDirect3DTexture9", d3d9h, pure.} = object
+  IDirect3DStateBlock9* {.importcpp: "IDirect3DStateBlock9", d3d9h, pure.} = object
   ID3DXFont* {.importcpp: "ID3DXFont", d3dx9h, pure.} = object
 
 proc Direct3DCreate9*(sdk: UINT): ptr IDirect3D9
-  {.importc: "Direct3DCreate9", header: "d3d9.h", stdcall.}
+  {.importc: "Direct3DCreate9", d3d9h, stdcall.}
 
 proc Release*(self: ptr IDirect3D9): ULONG {.importcpp: "#->Release()", d3d9h, discardable.}
 proc Release*(self: ptr IDirect3DDevice9): ULONG {.importcpp: "#->Release()", d3d9h, discardable.}
@@ -184,7 +261,14 @@ proc Release*(self: ptr IDirect3DSurface9): ULONG {.importcpp: "#->Release()", d
 proc Release*(self: ptr IDirect3DVertexBuffer9): ULONG {.importcpp: "#->Release()", d3d9h, discardable.}
 proc Release*(self: ptr IDirect3DIndexBuffer9): ULONG {.importcpp: "#->Release()", d3d9h, discardable.}
 proc Release*(self: ptr IDirect3DTexture9): ULONG {.importcpp: "#->Release()", d3d9h, discardable.}
+proc Release*(self: ptr IDirect3DStateBlock9): ULONG {.importcpp: "#->Release()", d3d9h, discardable.}
 proc Release*(self: ptr ID3DXFont): ULONG {.importcpp: "#->Release()", d3dx9h, discardable.}
+
+proc Capture*(self: ptr IDirect3DStateBlock9): HRESULT
+  {.importcpp: "#->Capture()", d3d9h, discardable.}
+
+proc Apply*(self: ptr IDirect3DStateBlock9): HRESULT
+  {.importcpp: "#->Apply()", d3d9h, discardable.}
 
 proc CreateDevice*(self: ptr IDirect3D9,
     Adapter: UINT,
@@ -209,6 +293,9 @@ proc Clear*(self: ptr IDirect3DDevice9,
 
 proc BeginScene*(self: ptr IDirect3DDevice9): HRESULT {.importcpp: "#->BeginScene()", d3d9h, discardable.}
 proc EndScene*(self: ptr IDirect3DDevice9): HRESULT {.importcpp: "#->EndScene()", d3d9h, discardable.}
+
+proc AddRef*(self: ptr IDirect3DDevice9): ULONG
+  {.importcpp: "#->AddRef()", d3d9h, discardable.}
 
 proc Present*(self: ptr IDirect3DDevice9,
       pSourceRect: pointer,
@@ -270,6 +357,9 @@ proc StretchRect*(self: ptr IDirect3DDevice9,
   pDestRect: pointer,
   Filter: DWORD): HRESULT
   {.importcpp: "#->StretchRect(@)", d3d9h, discardable.}
+
+proc TestCooperativeLevel*(self: ptr IDirect3DDevice9): HRESULT
+  {.importcpp: "#->TestCooperativeLevel()", d3d9h, discardable.}
 
 proc CreateVertexBuffer*(self: ptr IDirect3DDevice9,
   Length: UINT,
@@ -389,11 +479,39 @@ proc SetSamplerState*(self: ptr IDirect3DDevice9, Sampler: DWORD, Type: D3DSAMPL
 proc SetTextureStageState*(self: ptr IDirect3DDevice9, Stage: DWORD, Type: D3DTEXTURESTAGESTATETYPE, Value: DWORD): HRESULT
   {.importcpp: "#->SetTextureStageState(@)", d3d9h, discardable.}
 
+proc SetTransform*(self: ptr IDirect3DDevice9, State: D3DTRANSFORMSTATETYPE, pMatrix: ptr D3DMATRIX): HRESULT
+  {.importcpp: "#->SetTransform(@)", d3d9h, discardable.}
+
+proc GetTransform*(self: ptr IDirect3DDevice9, State: D3DTRANSFORMSTATETYPE, pMatrix: ptr D3DMATRIX): HRESULT
+  {.importcpp: "#->GetTransform(@)", d3d9h, discardable.}
+
+proc SetViewport*(self: ptr IDirect3DDevice9, vp: ptr D3DVIEWPORT9): HRESULT
+  {.importcpp: "#->SetViewport(@)", d3d9h, discardable.}
+
+proc SetPixelShader*(self: ptr IDirect3DDevice9, ps: pointer): HRESULT
+  {.importcpp: "#->SetPixelShader(@)", d3d9h, discardable.}
+
+proc SetVertexShader*(self: ptr IDirect3DDevice9, vs: pointer): HRESULT
+  {.importcpp: "#->SetVertexShader(@)", d3d9h, discardable.}
+
+proc SetScissorRect*(self: ptr IDirect3DDevice9, rect: ptr DXRECT): HRESULT
+  {.importcpp: "#->SetScissorRect(@)", d3d9h, discardable.}
+
+proc CreateStateBlock*(self: ptr IDirect3DDevice9, t: D3DSTATEBLOCKTYPE, outSB: ptr ptr IDirect3DStateBlock9): HRESULT
+  {.importcpp: "#->CreateStateBlock(@)", d3d9h, discardable.}
+
 template FAILED*(hr: HRESULT): bool = hr < 0
 template SUCCEEDED*(hr: HRESULT): bool = hr >= 0
 
-proc D3DCOLOR_ARGB*(a: int, r: int, g: int, b: int): int32 = (DWORD((a and 0xFF).uint32) shl 24) or (DWORD((r and 0xFF).uint32) shl 16) or (DWORD((g and 0xFF).uint32) shl 8) or DWORD((b and 0xFF).uint32)
-proc D3DCOLOR_RGBA*(r: int, g: int, b: int, a: int): int32 = D3DCOLOR_ARGB(a, r, g, b)
-proc D3DCOLOR_XRGB*(r: int, g: int, b: int): int32 = D3DCOLOR_ARGB(0xff, r, g, b) 
-proc D3DCOLOR_XYUV*(y: int, u: int, v: int): int32 = D3DCOLOR_ARGB(0xff, y, u, v)
-proc D3DCOLOR_AYUV*(a: int, y: int, u: int, v: int): int32 = D3DCOLOR_ARGB(a, y, u, v)
+proc D3DCOLOR_ARGB*(a, r, g, b: int): int32 = (DWORD((a and 0xFF).uint32) shl 24) or (DWORD((r and 0xFF).uint32) shl 16) or (DWORD((g and 0xFF).uint32) shl 8) or DWORD((b and 0xFF).uint32)
+proc D3DCOLOR_RGBA*(r, g, b, a: int): int32 = D3DCOLOR_ARGB(a, r, g, b)
+proc D3DCOLOR_XRGB*(r, g, b: int): int32 = D3DCOLOR_ARGB(0xff, r, g, b) 
+proc D3DCOLOR_XYUV*(y, u, v: int): int32 = D3DCOLOR_ARGB(0xff, y, u, v)
+proc D3DCOLOR_AYUV*(a, y, u, v: int): int32 = D3DCOLOR_ARGB(a, y, u, v)
+proc D3DCOLOR_COLORVALUE_CLAMPED*(r, g, b, a: float32): int32 =
+  D3DCOLOR_RGBA(
+    int32(clamp(r, 0.0'f32, 1.0'f32) * 255.0'f32),
+    int32(clamp(g, 0.0'f32, 1.0'f32) * 255.0'f32),
+    int32(clamp(b, 0.0'f32, 1.0'f32) * 255.0'f32),
+    int32(clamp(a, 0.0'f32, 1.0'f32) * 255.0'f32)
+  )
