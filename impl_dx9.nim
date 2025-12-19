@@ -11,7 +11,7 @@ type
 
 const
   D3DFVF_IMGUI* = (D3DFVF_XYZ or D3DFVF_DIFFUSE or D3DFVF_TEX1)
-  D3DLOCK_DISCARD* = 0x2000'u32
+  D3DLOCK_DISCARD* = 0x2000'i32
 
 var
   g_Device*: ptr IDirect3DDevice9 = nil
@@ -37,19 +37,19 @@ proc igDX9SetupRenderState*(drawData: ptr ImDrawData) =
   g_Device.SetPixelShader(nil)
   g_Device.SetVertexShader(nil)
 
-  g_Device.SetRenderState(D3DRS_FILLMODE, DWORD(D3DFILL_SOLID.int32))
-  g_Device.SetRenderState(D3DRS_SHADEMODE, DWORD(D3DSHADE_GOURAUD.int32))
+  g_Device.SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID.int32)
+  g_Device.SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD.int32)
   g_Device.SetRenderState(D3DRS_ZWRITEENABLE, 0)
   g_Device.SetRenderState(D3DRS_ALPHATESTENABLE, 0)
-  g_Device.SetRenderState(D3DRS_CULLMODE, DWORD(D3DCULL_NONE.int32))
+  g_Device.SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE.int32)
   g_Device.SetRenderState(D3DRS_ZENABLE, 0)
   g_Device.SetRenderState(D3DRS_ALPHABLENDENABLE, 1)
-  g_Device.SetRenderState(D3DRS_BLENDOP, DWORD(D3DBLENDOP_ADD.int32))
-  g_Device.SetRenderState(D3DRS_SRCBLEND, DWORD(D3DBLEND_SRCALPHA.int32))
-  g_Device.SetRenderState(D3DRS_DESTBLEND, DWORD(D3DBLEND_INVSRCALPHA.int32))
+  g_Device.SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD.int32)
+  g_Device.SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA.int32)
+  g_Device.SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA.int32)
   g_Device.SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, 1)
-  g_Device.SetRenderState(D3DRS_SRCBLENDALPHA, DWORD(D3DBLEND_ONE.int32))
-  g_Device.SetRenderState(D3DRS_DESTBLENDALPHA, DWORD(D3DBLEND_INVSRCALPHA.int32))
+  g_Device.SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE.int32)
+  g_Device.SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_INVSRCALPHA.int32)
   g_Device.SetRenderState(D3DRS_SCISSORTESTENABLE, 1)
   g_Device.SetRenderState(D3DRS_FOGENABLE, 0)
   g_Device.SetRenderState(D3DRS_RANGEFOGENABLE, 0)
@@ -58,24 +58,25 @@ proc igDX9SetupRenderState*(drawData: ptr ImDrawData) =
   g_Device.SetRenderState(D3DRS_CLIPPING, 1)
   g_Device.SetRenderState(D3DRS_LIGHTING, 0)
 
-  g_Device.SetTextureStageState(0, D3DTSS_COLOROP, DWORD(D3DTOP_MODULATE.int32))
-  g_Device.SetTextureStageState(0, D3DTSS_COLORARG1, DWORD(D3DTA_TEXTURE))
-  g_Device.SetTextureStageState(0, D3DTSS_COLORARG2, DWORD(D3DTA_DIFFUSE))
-  g_Device.SetTextureStageState(0, D3DTSS_ALPHAOP, DWORD(D3DTOP_MODULATE.int32))
-  g_Device.SetTextureStageState(0, D3DTSS_ALPHAARG1, DWORD(D3DTA_TEXTURE))
-  g_Device.SetTextureStageState(0, D3DTSS_ALPHAARG2, DWORD(D3DTA_DIFFUSE))
-  g_Device.SetTextureStageState(1, D3DTSS_COLOROP, DWORD(D3DTOP_DISABLE.int32))
-  g_Device.SetTextureStageState(1, D3DTSS_ALPHAOP, DWORD(D3DTOP_DISABLE.int32))
+  g_Device.SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE.int32)
+  g_Device.SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE)
+  g_Device.SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE)
+  g_Device.SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE.int32)
+  g_Device.SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE)
+  g_Device.SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE)
+  g_Device.SetTextureStageState(1, D3DTSS_COLOROP, D3DTOP_DISABLE.int32)
+  g_Device.SetTextureStageState(1, D3DTSS_ALPHAOP, D3DTOP_DISABLE.int32)
 
-  g_Device.SetSamplerState(0, D3DSAMP_MINFILTER, DWORD(D3DTEXF_LINEAR.int32))
-  g_Device.SetSamplerState(0, D3DSAMP_MAGFILTER, DWORD(D3DTEXF_LINEAR.int32))
-  g_Device.SetSamplerState(0, D3DSAMP_ADDRESSU, DWORD(D3DTADDRESS_CLAMP.int32))
-  g_Device.SetSamplerState(0, D3DSAMP_ADDRESSV, DWORD(D3DTADDRESS_CLAMP.int32))
+  g_Device.SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR.int32)
+  g_Device.SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR.int32)
+  g_Device.SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP.int32)
+  g_Device.SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP.int32)
 
-  let L = drawData.displayPos.x + 0.5'f32
-  let R = drawData.displayPos.x + drawData.displaySize.x + 0.5'f32
-  let T = drawData.displayPos.y + 0.5'f32
-  let B = drawData.displayPos.y + drawData.displaySize.y + 0.5'f32
+  let 
+    L = drawData.displayPos.x + 0.5'f32
+    R = drawData.displayPos.x + drawData.displaySize.x + 0.5'f32
+    T = drawData.displayPos.y + 0.5'f32
+    B = drawData.displayPos.y + drawData.displaySize.y + 0.5'f32
 
   var matIdentity: D3DMATRIX
   matIdentity.m = [
@@ -100,31 +101,35 @@ proc igDX9SetupRenderState*(drawData: ptr ImDrawData) =
 proc igDX9CreateFontsTexture*(): bool {.discardable.} =
   let io = igGetIO()
 
-  var pixels: ptr char = nil
-  var w: int32 = 0
-  var h: int32 = 0
-  var bpp: int32 = 0
+  var 
+    pixels: ptr char = nil
+    w: int32 = 0
+    h: int32 = 0
+    bpp: int32 = 0
+
   io.fonts.getTexDataAsRGBA32(pixels.addr, w.addr, h.addr, bpp.addr)
 
   if g_FontTexture != nil:
     g_FontTexture.Release()
     g_FontTexture = nil
 
-  if FAILED g_Device.CreateTexture(UINT(w), UINT(h), 1, DWORD(D3DUSAGE_DYNAMIC.int32), D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, g_FontTexture.addr, nil):
+  if FAILED g_Device.CreateTexture(w, h, 1, D3DUSAGE_DYNAMIC.int32, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, g_FontTexture.addr, nil):
     return false
 
   var lr: D3DLOCKED_RECT
   if FAILED g_FontTexture.LockRect(0, lr.addr, nil, 0):
     return false
 
-  let srcPitch = int(w) * int(bpp)
-  let dstPitch = int(lr.Pitch)
-  let srcBase = cast[ptr uint8](pixels)
-  let dstBase = cast[ptr uint8](lr.pBits)
+  let 
+    srcPitch = int(w) * int(bpp)
+    dstPitch = int(lr.Pitch)
+    srcBase = cast[ptr uint8](pixels)
+    dstBase = cast[ptr uint8](lr.pBits)
 
   for y in 0 ..< int(h):
-    let srcRow = cast[pointer](cast[uint](srcBase) + uint(y * srcPitch))
-    let dstRow = cast[pointer](cast[uint](dstBase) + uint(y * dstPitch))
+    let 
+      srcRow = cast[pointer](cast[uint](srcBase) + uint(y * srcPitch))
+      dstRow = cast[pointer](cast[uint](dstBase) + uint(y * dstPitch))
     copyMem(dstRow, srcRow, srcPitch)
 
   g_FontTexture.UnlockRect(0)
@@ -153,10 +158,8 @@ proc igDX9Init*(device: ptr IDirect3DDevice9): bool {.discardable.} =
   g_Device.AddRef()
   let io = igGetIO()
   io.backendRendererName = "imgui_impl_dx9_nim"
-  io.backendFlags = cast[ImGuiBackendFlags](
-    io.backendFlags.int32 or ImGuiBackendFlags.RendererHasVtxOffset.int32
-  )
-  true
+  io.backendFlags = cast[ImGuiBackendFlags](io.backendFlags.int32 or ImGuiBackendFlags.RendererHasVtxOffset.int32)
+  return true
 
 proc igDX9Shutdown*() =
   igDX9InvalidateDeviceObjects()
@@ -172,15 +175,16 @@ proc igDX9RenderDrawData*(drawData: ptr ImDrawData) =
   if g_VB == nil or g_VBSize < drawData.totalVtxCount:
     if g_VB != nil: g_VB.Release(); g_VB = nil
     g_VBSize = drawData.totalVtxCount + 5000
-    let usage = DWORD((D3DUSAGE_DYNAMIC or D3DUSAGE_WRITEONLY).int32)
-    if FAILED g_Device.CreateVertexBuffer(UINT(g_VBSize * sizeof(ImguiVertex)), usage, DWORD(D3DFVF_IMGUI), D3DPOOL_DEFAULT, g_VB.addr, nil):
+    let usage = (D3DUSAGE_DYNAMIC or D3DUSAGE_WRITEONLY).int32
+    if FAILED g_Device.CreateVertexBuffer(UINT(g_VBSize * sizeof(ImguiVertex)), usage, D3DFVF_IMGUI, D3DPOOL_DEFAULT, g_VB.addr, nil):
       return
 
   if g_IB == nil or g_IBSize < drawData.totalIdxCount:
     if g_IB != nil: g_IB.Release(); g_IB = nil
     g_IBSize = drawData.totalIdxCount + 10000
-    let usage = DWORD((D3DUSAGE_DYNAMIC or D3DUSAGE_WRITEONLY).int32)
-    let fmt = (if sizeof(ImDrawIdx) == 2: D3DFMT_INDEX16 else: D3DFMT_INDEX32)
+    let 
+      usage = (D3DUSAGE_DYNAMIC or D3DUSAGE_WRITEONLY).int32
+      fmt = (if sizeof(ImDrawIdx) == 2: D3DFMT_INDEX16 else: D3DFMT_INDEX32)
     if FAILED g_Device.CreateIndexBuffer(UINT(g_IBSize * sizeof(ImDrawIdx)), usage, fmt, D3DPOOL_DEFAULT, g_IB.addr, nil):
       return
 
@@ -191,27 +195,29 @@ proc igDX9RenderDrawData*(drawData: ptr ImDrawData) =
     return
 
   var lastWorld, lastView, lastProj: D3DMATRIX
+
   g_Device.GetTransform(D3DTS_WORLD, lastWorld.addr)
   g_Device.GetTransform(D3DTS_VIEW, lastView.addr)
   g_Device.GetTransform(D3DTS_PROJECTION, lastProj.addr)
 
-  var vtxPtr: pointer = nil
-  var idxPtr: pointer = nil
+  var 
+    vtxPtr: pointer = nil
+    idxPtr: pointer = nil
 
-  if FAILED g_VB.Lock(0, UINT(drawData.totalVtxCount * sizeof(ImguiVertex)), vtxPtr.addr, DWORD(D3DLOCK_DISCARD)):
+  if FAILED g_VB.Lock(0, UINT(drawData.totalVtxCount * sizeof(ImguiVertex)), vtxPtr.addr, D3DLOCK_DISCARD):
     stateBlock.Release()
     return
 
-  if FAILED g_IB.Lock(0, UINT(drawData.totalIdxCount * sizeof(ImDrawIdx)), idxPtr.addr, DWORD(D3DLOCK_DISCARD)):
+  if FAILED g_IB.Lock(0, UINT(drawData.totalIdxCount * sizeof(ImDrawIdx)), idxPtr.addr, D3DLOCK_DISCARD):
     g_VB.Unlock()
     stateBlock.Release()
     return
 
-  var vtxDst = cast[ptr UncheckedArray[ImguiVertex]](vtxPtr)
-  var idxDst = cast[ptr UncheckedArray[ImDrawIdx]](idxPtr)
-
-  var vtxOffset = 0
-  var idxOffset = 0
+  var 
+    vtxDst = cast[ptr UncheckedArray[ImguiVertex]](vtxPtr)
+    idxDst = cast[ptr UncheckedArray[ImDrawIdx]](idxPtr)
+    vtxOffset = 0
+    idxOffset = 0
 
   for n in 0 ..< drawData.cmdListsCount:
     let cmdList = drawData.cmdLists[n]
@@ -240,7 +246,7 @@ proc igDX9RenderDrawData*(drawData: ptr ImDrawData) =
 
   g_Device.SetStreamSource(0, g_VB, 0, UINT(sizeof(ImguiVertex)))
   g_Device.SetIndices(g_IB)
-  g_Device.SetFVF(DWORD(D3DFVF_IMGUI))
+  g_Device.SetFVF(D3DFVF_IMGUI)
 
   igDX9SetupRenderState(drawData)
 
@@ -270,8 +276,7 @@ proc igDX9RenderDrawData*(drawData: ptr ImDrawData) =
         r.right  = clipMaxX.int32
         r.bottom = clipMaxY.int32
 
-        discard g_Device.SetScissorRect(r.addr) 
-
+        g_Device.SetScissorRect(r.addr) 
         g_Device.SetTexture(0, cast[ptr IDirect3DTexture9](pcmd.textureId))
 
         let baseVtx = INT(int(pcmd.vtxOffset) + globalVtxOffset)
