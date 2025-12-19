@@ -10,7 +10,7 @@ type
     uv*:  array[2, float32]
 
 const
-  D3DFVF_IMGUI* = (D3DFVF_XYZRHW or D3DFVF_DIFFUSE or D3DFVF_TEX1)
+  D3DFVF_IMGUI* = (D3DFVF_XYZ or D3DFVF_DIFFUSE or D3DFVF_TEX1)
   D3DLOCK_DISCARD* = 0x2000'u32
 
 var
@@ -153,7 +153,9 @@ proc igDX9Init*(device: ptr IDirect3DDevice9): bool {.discardable.} =
   g_Device.AddRef()
   let io = igGetIO()
   io.backendRendererName = "imgui_impl_dx9_nim"
-  io.backendFlags = (io.backendFlags.int32 or ImGuiBackendFlags.RendererHasVtxOffset.int32).ImGuiBackendFlags
+  io.backendFlags = cast[ImGuiBackendFlags](
+    io.backendFlags.int32 or ImGuiBackendFlags.RendererHasVtxOffset.int32
+  )
   true
 
 proc igDX9Shutdown*() =
