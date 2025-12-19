@@ -1,5 +1,4 @@
-import os, strutils
-import winim/lean
+import os, strutils, winim/lean
 
 static:
   if not existsEnv("DXSDK_DIR"):
