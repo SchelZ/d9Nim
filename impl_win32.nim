@@ -76,7 +76,7 @@ proc igWin32Shutdown*() =
   g_hWnd = 0
   g_LastMouseCursor = -1
 
-proc igWin32WndProcHandler*(hwnd: HWND, msg: UINT, wParam: WPARAM, lParam: LPARAM): LRESULT {.stdcall.} =
+proc igWin32WndProcHandler*(hwnd: HWND, msg: UINT, wParam: WPARAM, lParam: LPARAM): LRESULT {.stdcall, discardable.} =
   if igGetCurrentContext() == nil:
     return 0
 
@@ -152,15 +152,18 @@ proc igWin32NewFrame*() =
 
   # Display size
   var rect: RECT
-  GetClientRect(g_hWnd, addr rect)
-  io.displaySize = ImVec2(
-    x: float32(rect.right - rect.left),
-    y: float32(rect.bottom - rect.top)
-  )
+  GetClientRect(g_hWnd, rect.addr)
+
+  let 
+    w = rect.right - rect.left
+    h = rect.bottom - rect.top
+
+  io.displaySize = ImVec2(x: w.float32, y: h.float32)
+  io.displayFramebufferScale = ImVec2(x: 1.0f, y: 1.0f)
 
   # Time step
   var currentTime: int64
-  QueryPerformanceCounter(cast[ptr LARGE_INTEGER](addr currentTime))
+  QueryPerformanceCounter(cast[ptr LARGE_INTEGER](currentTime.addr))
   io.deltaTime = float32(currentTime - g_Time) / float32(g_TicksPerSecond)
   g_Time = currentTime
 
