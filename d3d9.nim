@@ -51,7 +51,8 @@ const
   D3DLOCK_DISCARD* = 0x00002000'i32
   D3DERR_DEVICELOST* = 0x88760868'i32
   D3DERR_DEVICENOTRESET* = 0x88760869'i32
-
+  D3DCREATE_HARDWARE_VERTEXPROCESSING* = 0x00000040'i32
+  D3DPRESENT_INTERVAL_ONE*             = 0x00000001'i32
 
 type
   D3DDEVTYPE* {.importcpp: "D3DDEVTYPE", d3d9h, size: 4.} = enum
@@ -190,7 +191,7 @@ type
     top*: LONG
     right*: LONG
     bottom*: LONG
-    
+
   D3DRECT* {.importcpp: "D3DRECT", d3d9h, bycopy, pure.} = object
     x1*, y1*, x2*, y2*: int32
 
