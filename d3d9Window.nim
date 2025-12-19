@@ -1,90 +1,190 @@
-import winim/com, d3d9
+import winim/lean
+import nimgl/imgui
 
-var 
-  d3d: LPDIRECT3D9
-  d3ddev: LPDIRECT3DDEVICE9
-  d3dpp: D3DPRESENT_PARAMETERS
-  d3dFont: LPD3DXFONT
+import d3d9
+import impl_win32
+import impl_dx9
 
-proc initD3D(hWnd: pointer): void = 
-  d3d = Direct3DCreate9(D3D_SDK_VERSION) 
+# ------------------------------------------------------------
+# Globals
+# ------------------------------------------------------------
 
-  ZeroMemory(d3dpp.addr, sizeof(d3dpp))
-  d3dpp.Windowed = true
-  d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD  
-  d3dpp.hDeviceWindow = hWnd
-  d3dpp.BackBufferFormat = D3DFMT_UNKNOWN
-  d3dpp.EnableAutoDepthStencil = true
-  d3dpp.AutoDepthStencilFormat = D3DFMT_D16
-  d3d.CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, D3DCREATE_SOFTWARE_VERTEXPROCESSING, d3dpp.addr, d3ddev.addr)
-  D3DXCreateFont(d3ddev, 40, 0, FW_BOLD, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH or FF_DONTCARE, "Arial", d3dFont.addr);
+var
+  g_hWnd: HWND = 0
+  g_D3D: ptr IDirect3D9 = nil
+  g_Device: ptr IDirect3DDevice9 = nil
+  g_PP: D3DPRESENT_PARAMETERS
 
-proc render_frame(): void =
-  d3ddev.Clear(0, nil, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 40, 100), 1.0, 0)
-  d3ddev.BeginScene()
+  g_Running = true
 
-  var r: RECT
-  SetRect(addr r, 100, 100, 0, 0)
-  d3dFont.DrawTextW(nil, "Directx9 from nim!", -1, r.addr, DT_NOCLIP, D3DCOLOR_XRGB(255, 255, 0))
+# ------------------------------------------------------------
+# Win32 WndProc
+# ------------------------------------------------------------
 
-  d3ddev.EndScene()
-  d3ddev.Present(nil, nil, 0, nil)
+proc WndProc(hwnd: HWND, msg: UINT, wParam: WPARAM, lParam: LPARAM): LRESULT {.stdcall.} =
+  if igWin32WndProcHandler(hwnd, msg, wParam, lParam) != 0:
+    return 1
 
-proc cleanD3D(): void =
-  d3dFont.Release()
-  d3ddev.Release()   
-  d3d.Release()  
-
-proc WindowProc(hwnd: HWND, message: UINT, wParam: WPARAM, lParam: LPARAM): LRESULT {.stdcall.} =
-  case message
-  of WM_PAINT:
-    var ps: PAINTSTRUCT
-    var hdc = BeginPaint(hwnd, ps)
-    defer: EndPaint(hwnd, ps)
-
-    var rect: RECT
-    GetClientRect(hwnd, rect)
-    DrawText(hdc, "Hello, Windows!", -1, rect, DT_SINGLELINE or DT_CENTER or DT_VCENTER)
+  case msg
+  of WM_SIZE:
+    if g_Device != nil and wParam != SIZE_MINIMIZED:
+      g_PP.BackBufferWidth  = lParam.int32
+      g_PP.BackBufferHeight = lParam.int32
+      igDX9InvalidateDeviceObjects()
+      discard g_Device.Reset(g_PP.addr)
+      igDX9CreateDeviceObjects()
     return 0
+
+  of WM_SYSCOMMAND:
+    if (wParam and 0xfff0) == SC_KEYMENU:
+      return 0
 
   of WM_DESTROY:
     PostQuitMessage(0)
+    g_Running = false
     return 0
 
   else:
-    return DefWindowProc(hwnd, message, wParam, lParam)
+    return DefWindowProcW(hwnd, msg, wParam, lParam)
 
-proc main() =
-  var
-    hInstance = GetModuleHandle(nil)
-    msg: MSG
-    wndclass: WNDCLASS
-    hwnd: pointer
-  wndclass.style = CS_HREDRAW or CS_VREDRAW
-  wndclass.lpfnWndProc = WindowProc
-  wndclass.cbClsExtra = 0
-  wndclass.cbWndExtra = 0
-  wndclass.hInstance = hInstance
-  wndclass.hIcon = LoadIcon(0, IDI_APPLICATION)
-  wndclass.hCursor = LoadCursor(0, IDC_ARROW)
-  wndclass.hbrBackground = GetStockObject(WHITE_BRUSH)
-  wndclass.lpszMenuName = nil
-  wndclass.lpszClassName = "HelloWin"
+# ------------------------------------------------------------
+# D3D9 Init / Shutdown
+# ------------------------------------------------------------
 
-  if RegisterClass(wndclass) == 0:
-    MessageBox(0, "This program requires Windows NT!", "HelloWin", MB_ICONERROR)
+proc CreateDevice(hwnd: HWND) =
+  g_D3D = Direct3DCreate9(UINT(D3D_SDK_VERSION))
+  if g_D3D.isNil:
+    quit "Direct3DCreate9 failed"
+
+  zeroMem(g_PP.addr, sizeof(g_PP))
+  g_PP.Windowed = TRUE
+  g_PP.SwapEffect = D3DSWAPEFFECT_DISCARD
+  g_PP.BackBufferFormat = D3DFMT_UNKNOWN
+  g_PP.EnableAutoDepthStencil = TRUE
+  g_PP.AutoDepthStencilFormat = D3DFMT_D16
+  g_PP.PresentationInterval = 1
+  g_PP.hDeviceWindow = hwnd
+
+  let hr = g_D3D.CreateDevice(
+    UINT(D3DADAPTER_DEFAULT),
+    D3DDEVTYPE_HAL,
+    hwnd,
+    DWORD(D3DCREATE_SOFTWARE_VERTEXPROCESSING),
+    g_PP.addr,
+    g_Device.addr
+  )
+
+  if FAILED(hr):
+    quit "CreateDevice failed"
+
+
+proc CleanupDevice() =
+  if g_Device != nil:
+    g_Device.Release()
+    g_Device = nil
+
+  if g_D3D != nil:
+    g_D3D.Release()
+    g_D3D = nil
+
+# ------------------------------------------------------------
+# Rendering
+# ------------------------------------------------------------
+
+proc RenderFrame() =
+  if g_Device == nil:
     return
 
-  hwnd = cast[pointer](CreateWindow(wndclass.lpszClassName, "The Hello Program", WS_OVERLAPPEDWINDOW, 100, 100, 1280, 800, nil, nil, wndclass.hInstance, nil))
+  let hrTest = g_Device.TestCooperativeLevel()
+  if hrTest == D3DERR_DEVICELOST:
+    Sleep(10)
+    return
+  elif hrTest == D3DERR_DEVICENOTRESET:
+    igDX9InvalidateDeviceObjects()
+    g_Device.Reset(g_PP.addr)
+    igDX9CreateDeviceObjects()
 
-  initD3D(hwnd)
-  ShowWindow(cast[HWND](hwnd), SW_SHOW)
-  UpdateWindow(cast[HWND](hwnd))
+  g_Device.Clear(0, nil, D3DCLEAR_TARGET.int32, D3DCOLOR_XRGB(30, 30, 30), 1.0, 0)
+
+  if SUCCEEDED(g_Device.BeginScene()):
+    igRender()
+    igDX9RenderDrawData(igGetDrawData())
+    discard g_Device.EndScene()
+
+  discard g_Device.Present(nil, nil, 0, nil)
+
+# ------------------------------------------------------------
+# Main
+# ------------------------------------------------------------
+
+proc main() =
+  let hInst = GetModuleHandleW(nil)
+
+  var wc: WNDCLASSW
+  wc.lpfnWndProc = WndProc
+  wc.hInstance = hInst
+  wc.lpszClassName = "NimDX9"
+  wc.hCursor = LoadCursorW(0, IDC_ARROW)
+  discard RegisterClassW(wc)
+
+  let g_hWnd = CreateWindowW(
+    wc.lpszClassName,
+    "DX9 Texture + VB/IB",
+    DWORD(WS_OVERLAPPEDWINDOW),
+    100, 100, 900, 700,
+    HWND(0), HMENU(0), hInst, nil
+  )
 
 
-  while GetMessage(msg, 0, 0, 0) != 0:
-    TranslateMessage(msg)
-    DispatchMessage(msg)
-    render_frame()
-  cleanD3D()
+  ShowWindow(g_hWnd, SW_SHOWDEFAULT)
+  UpdateWindow(g_hWnd)
+
+  # ------------------------------------------------------------
+  # Init D3D + ImGui
+  # ------------------------------------------------------------
+
+  CreateDevice(g_hWnd)
+
+  igCreateContext(nil)
+  igStyleColorsDark(nil)
+
+  discard igWin32Init(g_hWnd)
+  discard igDX9Init(g_Device)
+  discard igDX9CreateDeviceObjects()
+
+  # ------------------------------------------------------------
+  # Main loop
+  # ------------------------------------------------------------
+
+  var msg: MSG
+  while g_Running:
+    while PeekMessageW(msg.addr, 0, 0, 0, PM_REMOVE) != 0:
+      TranslateMessage(msg.addr)
+      DispatchMessageW(msg.addr)
+
+    igWin32NewFrame()
+    igDX9NewFrame()
+    igNewFrame()
+
+    # ---------------- UI ----------------
+    igBegin("DX9 ImGui Window", nil)
+    igText("DirectX 9 + Nim + ImGui")
+    igText("FPS: %.1f", igGetIO().framerate)
+    if igButton("Exit"):
+      g_Running = false
+    igEnd()
+    # ------------------------------------
+
+    igEndFrame()
+    RenderFrame()
+
+  # ------------------------------------------------------------
+  # Shutdown
+  # ------------------------------------------------------------
+
+  igDX9Shutdown()
+  igWin32Shutdown()
+  igDestroyContext(nil)
+  CleanupDevice()
+
 main()
