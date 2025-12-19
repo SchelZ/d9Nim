@@ -71,9 +71,13 @@ proc renderFrame() =
   if coop == D3DERR_DEVICELOST:
     Sleep(10)
     return
+
   if coop == D3DERR_DEVICENOTRESET:
-    discard resetDevice()
+    igDX9InvalidateDeviceObjects()
+    g_dev.Reset(addr g_pp)
+    igDX9CreateDeviceObjects()
     return
+
 
   # Start new frame (same flow as NimGL example)
   igDX9NewFrame()
@@ -112,7 +116,7 @@ var g_imguiAlive = false
 
 proc WndProc(hwnd: HWND, msg: UINT, wParam: WPARAM, lParam: LPARAM): LRESULT {.stdcall.} =
   if g_imguiAlive:
-    discard igWin32WndProcHandler(hwnd, msg, wParam, lParam)
+    igWin32WndProcHandler(hwnd, msg, wParam, lParam)
 
   case msg
   of WM_SIZE:
@@ -163,7 +167,7 @@ proc main() =
     quit "igWin32Init failed"
   if not igDX9Init(g_dev):
     quit "igDX9Init failed"
-  discard igDX9CreateDeviceObjects()
+  igDX9CreateDeviceObjects()
   g_imguiAlive = true
   var msg: MSG
   while true:
