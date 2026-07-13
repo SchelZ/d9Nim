@@ -4,22 +4,74 @@ when not defined(windows):
 import std/[os, strutils]
 import winim/lean
 
-const dxPath* = (if existsEnv("DXSDK_DIR"): getEnv("DXSDK_DIR").replace("\\", "/") else: "")
+const
+  dxsdkRegKeys = [
+    r"SOFTWARE\Microsoft\DirectX\Microsoft DirectX SDK (June 2010)",
+    r"SOFTWARE\WOW6432Node\Microsoft\DirectX\Microsoft DirectX SDK (June 2010)"
+  ]
+  dxsdkCommonPaths = [
+    r"C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)",
+    r"C:\Program Files\Microsoft DirectX SDK (June 2010)"
+  ]
+ 
+proc queryRegistryInstallPath(key: string): string =
+  let (output, code) = gorgeEx("reg query \"HKLM\\" & key & "\" /v InstallPath")
+  if code == 0:
+    for line in output.splitLines():
+      let l = line.strip()
+      if l.startsWith("InstallPath"):
+        let parts = l.split("REG_SZ")
+        if parts.len == 2:
+          return parts[1].strip()
+  return ""
+ 
+proc findDXSDK(): string =
+  if existsEnv("DXSDK_DIR"):
+    result = getEnv("DXSDK_DIR")
+ 
+  if result.len == 0:
+    for key in dxsdkRegKeys:
+      result = queryRegistryInstallPath(key)
+      if result.len > 0: break
+ 
+  if result.len == 0:
+    for path in dxsdkCommonPaths:
+      if dirExists(path):
+        result = path
+        break
+ 
+  result = result.strip().replace("\\", "/")
+  if result.len > 0 and result[^1] == '/':
+    result.setLen(result.len - 1)
+ 
+const dxPath* = findDXSDK()
 
 static:
   if dxPath.len == 0:
-    {.warning: "DXSDK_DIR is not set at compile time.".}
+    {.warning: "DirectX SDK not found (checked DXSDK_DIR, registry, and " &
+      "common install paths). Install the legacy DirectX SDK (June 2010) " &
+      "or set DXSDK_DIR manually. d3d9/d3dx9 headers will not be available.".}
+  elif not fileExists(dxPath / "Include" / "d3d9.h"):
+    {.warning: "DXSDK_DIR resolved to '" & dxPath &
+      "' but Include/d3d9.h was not found there - check the path.".}
 
 when dxPath.len != 0:
-  const dxInclude = "-I\"" & dxPath & "/Include\""
-  {.passC: dxInclude.}
-
-  when defined(i386):
-    {.passL: "\"" & dxPath & "/Lib/x86/d3d9.lib\"".}
-    {.passL: "\"" & dxPath & "/Lib/x86/d3dx9.lib\"".}
+  {.passC: "-I\"" & dxPath & "/Include\"".}
+ 
+  when defined(amd64):
+    const dxLibDir = dxPath & "/Lib/x64"
+  elif defined(i386):
+    const dxLibDir = dxPath & "/Lib/x86"
   else:
-    {.passL: "\"" & dxPath & "/Lib/x64/d3d9.lib\"".}
-    {.passL: "\"" & dxPath & "/Lib/x64/d3dx9.lib\"".}
+    {.error: "Unsupported CPU architecture for DirectX 9 SDK linking " &
+      "(only i386/amd64 are supported).".}
+ 
+  static:
+    if not dirExists(dxLibDir):
+      {.warning: "DirectX SDK library directory not found: " & dxLibDir.}
+ 
+  {.passL: "\"" & dxLibDir & "/d3d9.lib\"".}
+  {.passL: "\"" & dxLibDir & "/d3dx9.lib\"".}
 
 {.pragma: d3d9h, header: "d3d9.h".}
 {.pragma: d3dx9h, header: "d3dx9core.h".}
