@@ -1,6 +1,8 @@
-import os, strutils
-import winim/lean
+when not defined(windows):
+  {.error: "dxsdk.nim only supports Windows targets.".}
 
+import std/[os, strutils]
+import winim/lean
 
 const dxPath* = (if existsEnv("DXSDK_DIR"): getEnv("DXSDK_DIR").replace("\\", "/") else: "")
 
